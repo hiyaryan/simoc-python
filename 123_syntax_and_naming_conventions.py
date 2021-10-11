@@ -1,6 +1,6 @@
-# 145 Syntax and Naming Standards (145_syntax_naming_standards)
+# 123 Syntax and Naming Standards (123_syntax_naming_standards)
 # US#80    Python Practice
-# Task#145 https://tree.taiga.io/project/hiyaryan-simoc-project-29/task/123?
+# Task#123 https://tree.taiga.io/project/hiyaryan-simoc-project-29/task/123?
 
 # Ryan Meneses
 # SER401 Capstone
