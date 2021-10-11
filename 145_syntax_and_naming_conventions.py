@@ -77,15 +77,53 @@ x           =           1           +           2
 
 
 # IV. PARENTHESIS
-# Parenthesis are for grouping
+# 1. Parenthesis are for grouping
 x = 2 * (3 + 4)
 
-# Parenthesis indicate a function is being called
-# Calling a function with arguments
+# 2. Parenthesis indicate a function is being called
+# 2.1Calling a function with arguments
 print('1st value', 1)
 print('2nd value', 2)
 
-# Calling a function without arguments
+# 2.2 Calling a function without arguments
 L = [4, 2, 3, 1]
 L.sort()
 
+
+# V. NAMING CONVENTIONS
+# 1. Names to Avoid
+# Never use l/L or O (letter "oh") as single variable names
+l = "Do not use l as a single variable name!"
+L = "Do not use L as a single variable name!"
+O = "Do not use O as a single variable name!"
+
+# 2. Package and Module Names
+# 2.1 Module names are short, all-lowercase, and uses underscores as necessary for readability
+some_module = "Module naming convention."
+
+# 2.2 Package names are short, all-lowercase, and discourages the use of underscores
+package = "Package naming convention."
+
+# 3. Class Names
+# Class names use the CapWord (camelcase) convention
+ClassName = "Class naming convention."
+
+# 4. Exception Names
+# Use CapWord and end it with Error (or the type of exception)
+StackOverflowError = "Error naming convention."
+SocketException = "Exception naming convention."
+
+# 5. Global and Function Variables
+# Global and Function variables should be lowercase with words separated by underscores
+this_is_a_variable = "This is a properly named Global and Function variable."
+
+# 6. Method Names and Instance Variables
+# 6.1 Same as function naming rules
+some_public_method = "Public method naming convention."
+
+# 6.2 Use one leading underscore for non-public methods and instance variables
+_some_private_method = "Private or protected method naming convention."
+
+# 7. Constants
+# Constants should be all caps with words separated by underscores
+MAX_OVERFLOW = "Constant naming convention."
