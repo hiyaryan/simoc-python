@@ -9,7 +9,13 @@
 # The Python Standard Library: https://docs.python.org/3/library/
 
 # Standard Libraries are distributed with Python
-# It is not necessary to import these libraries in order to use its functions
+# The following example demonstrates how to use the ceil function in the math library
 
-# The following example demonstrates the usage of the Python math library
+# 1. Import the library
+import math
+
+x = 1.37
+
+# 2. Call the ceil function in the math library using the dot operator
+print(math.ceil(x))
 
