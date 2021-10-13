@@ -105,7 +105,7 @@ some_module = "Module naming convention."
 package = "Package naming convention."
 
 # 3. Class Names
-# Class names use the CapWord (camelcase) convention
+# Class names use the CapWord (Pascal Case) convention
 ClassName = "Class naming convention."
 
 # 4. Exception Names
