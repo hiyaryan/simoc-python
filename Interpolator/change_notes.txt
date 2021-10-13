@@ -1,0 +1,16 @@
+Changes implemented per suggestions (even if just hints that are optional, for the sake of understanding):
+1. Make spacing more even.
+2. Remove camelCase and replace with snake_case
+3. Make lines less than 80 chars by using \ to continue lines
+4. remove empty returns
+5. Correct commenting
+6. Improve screen readout for clearer understanding.
+7. Python uses pure division so  int/int already gives float, so 100.0 is unnecessary.
+8. Replace manual csv writing with 'import csv' module
+9. Replace manual file writing with the "with" method.
+
+Changes not yet implemented:
+1. Use f-strings for strings.
+3. While loops convert to for
+4. Use unpacking on line 67/68 for current time, val, fakepair
+5. Use tuples where a c struct would be used, and lists where arrays would be used firstPair = [startTime, startVal]?
