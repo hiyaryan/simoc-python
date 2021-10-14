@@ -5,7 +5,7 @@
 This repository is for US#80 (link below). Its purpose is for Team 29 to practice relevant Python as it relates to the
 project.
 
-US#29 Taiga Link
+US#80 Taiga Link
 https://tree.taiga.io/project/hiyaryan-simoc-project-29/us/80?milestone=299041
 
 ## Workflow
