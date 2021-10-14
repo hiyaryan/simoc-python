@@ -7,12 +7,13 @@
 # Version 1.0
 
 # This file demonstrates a simple object-oriented program.
-# Reference:
+# Reference: https://realpython.com/python3-object-oriented-programming/
 
 # Find more information on object-oriented programming below.
-#
+# https://docs.python.org/3/tutorial/classes.html
 
 
 # CONTENTS
-
-
+# I.   Class Definition
+# II.  Object Instantiation
+# III. Inheritance
