@@ -143,7 +143,7 @@ print(linear_expression_lambda(2))
 # V. CALLING A FUNCTION
 # Calling a function is executing a previously defined function
 def greet(name):
-    print("Hello, " + name + ".")
+    print(f'Hello {name}.')
 
 
 # The next line is calling the defined function greet()
