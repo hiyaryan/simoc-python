@@ -163,7 +163,7 @@ greet("Ryan")
 # On a function call, the number of arguments must match with the function definition
 def addition(a, b):
     sum = a + b
-    print(f"{a} + {b} =", sum)
+    print(f'{a} + {b} = {sum}')
 
 
 addition(5, 6)
