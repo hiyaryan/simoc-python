@@ -180,7 +180,7 @@ language(language_name="Python")
 
 # 3. Default arguments
 # A function called with no arguments uses a default value if it is defined with arguments
-def country(country_name = "USA"):
+def country(country_name="USA"):
     print("Country this file is made in:", country_name)
 
 
