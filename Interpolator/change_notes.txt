@@ -9,8 +9,15 @@ Changes implemented per suggestions (even if just hints that are optional, for t
 8. Replace manual csv writing with 'import csv' module
 9. Replace manual file writing with the "with" method.
 
-Changes not yet implemented:
-1. Use f-strings for strings.
-3. While loops convert to for
-4. Use unpacking on line 67/68 for current time, val, fakepair
-5. Use tuples where a c struct would be used, and lists where arrays would be used firstPair = [startTime, startVal]?
+Changes implemented in the second commit:
+10. Implemented unpacking for pairs.
+11. Fixed file name from talbe to table
+12. Implemented packing of functions with *args and **kwargs
+13. Reduced issue with spinlock causing vast resource wastage by only trying to read from fake sensor every 1/4 second instead of as often as possible,
+     maybe thousands of times a second. This is the time.sleep(.25) line. This makes a surprising difference. Now my computer fans do not kick up to high 
+     gear from running this script!
+14. Utilize negative list indexing to go from end of list. i.e list[length-1]  == list[-1]
+15. Used tuples in some places instead of just lists.
+16. change while loop that used iterator from end of list to instead use "for index, element in enumerate(reversed(list))" notation
+17. Changed the output string to f-string style.
+

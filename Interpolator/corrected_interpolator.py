@@ -26,10 +26,9 @@ def interpolate_linear(time_of_interest, given_time1, value1, \
   # multiplied by the slope (change rate) 
   interpolated_value = value1 + rate_of_change * time_difference;
   # Print interpolated point to screen
-  print("[", time_of_interest, "s ", "%.2f" % interpolated_value, \
-   "K]. Interpolated from:  [", "%4.2f" %given_time1, "s ", \
-   "%.2f " %value1, "K] and [", "%4.2f" %given_time2, "s ", "%.2f" %value2, \
-   "K]")
+  print(f"[{time_of_interest}s {interpolated_value:.2f}K]. "
+        f"Interpolated from: [{given_time1:4.2f}s {value1:.2f}K] and "
+        f"[{given_time2:4.2f}s {value2:.2f}K]")
   # The interpolated value is returned out of this function.
   return interpolated_value;
   
@@ -67,16 +66,18 @@ def generate_fake_pair(last_time, last_value):
 def fake_sensor(name, start_time, start_value, time_limit, sensor_data) :
   current_time = start_time
   current_value = start_value
+  fakeSensorArguments = {"last_time":current_time, "last_value":current_value}
   fake_pair = []
   while current_time < time_limit :
     fake_pair = fake_pair[:]
-    fake_pair = generate_fake_pair(current_time, current_value)
-    current_time = fake_pair[0]
-    current_value = fake_pair[1]
+    fake_pair = generate_fake_pair(**fakeSensorArguments)
+    current_time, current_value = fake_pair
+    fakeSensorArguments = {"last_time":current_time, "last_value":current_value}
     sensor_data.append(fake_pair)
   
 # Function to simulate data acquisition and interpolation  
 def generate_table_data():
+  #Initialize values
   start_time = 0
   start_value = 20
   table_time_step = 1
@@ -90,6 +91,8 @@ def generate_table_data():
   sensor_data.append(first_pair)
   table_data = []
   table_data.append(first_pair)
+  # Zero out list of 5 to pack arg variables into
+  interpolate_args = [0, 0, 0, 0, 0] 
 
   #Start a thread for a sensor sending data to the system
   sensor = threading.Thread(target=fake_sensor, \
@@ -97,8 +100,9 @@ def generate_table_data():
   sensor.start()
   
   while table_time < 101 :
+    time.sleep(.25) # Delay reading from sensor only every 1/4 second
+                    # (This prevents resource destroying spinlock!)
     current_time = sensor_data[-1][0]
-    #print(current_time)
     # If the current sensor reading is more than the current table time
     # Then find the most recent reading before it and interpolate with the 
     # most recent reading after it.
@@ -109,22 +113,28 @@ def generate_table_data():
                                         # of the list
       # Find the points just before and after the 
       # point of interest for interpolation
-      data_list_length = len(sensor_data_copy)
-      smallest_pair_without_going_under = sensor_data_copy[data_list_length - 1]
-      i = 1
       
-      #Get the smallest pair without going under
-      while sensor_data_copy[data_list_length - i][0] > table_time :
-        smallest_pair_without_going_under = \
-                               sensor_data_copy[data_list_length - i]
-        i = i + 1
-        
+      # Get the smallest pair without going under
+      for index, current_pair in enumerate(reversed(sensor_data_copy)):
+        if current_pair[0] > table_time:
+          smallest_pair_without_going_under = current_pair
+        if current_pair[0] < table_time:
+          break
+
       #Get the largest pair without going over
-      largest_pair_without_going_over = sensor_data_copy[data_list_length - i]
-      interpolated_value = interpolate_linear(table_time, \
-      largest_pair_without_going_over[0], largest_pair_without_going_over[1], \
-      smallest_pair_without_going_under[0], \
-      smallest_pair_without_going_under[1])
+      largest_pair_without_going_over = sensor_data_copy[-(index+1)]    
+      # Pack the arguments for the interpolate function.
+      interpolate_args[0] = table_time
+      # Time of the largest pair
+      interpolate_args[1] = largest_pair_without_going_over[0]
+      # Value of the largest pair
+      interpolate_args[2] = largest_pair_without_going_over[1]
+      # Time of the smallest pair
+      interpolate_args[3] = smallest_pair_without_going_under[0]
+      # Value of the smallest pair
+      interpolate_args[4] = smallest_pair_without_going_under[1]
+      # Interpolate to find the new value
+      interpolated_value = interpolate_linear(*interpolate_args)
       table_pair = table_pair[:]
       table_pair[0] = table_time
       table_pair[1] = interpolated_value
@@ -141,7 +151,7 @@ def generate_table_data():
     csv_writer.writerow(column_names)   
     csv_writer.writerows(sensor_data)
   # Write Interpolated Data
-  with open('talbe_data.csv', 'w', newline='') as csvfile:
+  with open('table_data.csv', 'w', newline='') as csvfile:
     column_names = ['time', 'value']
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(column_names) 
