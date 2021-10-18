@@ -109,3 +109,31 @@ file.close()
 file = open('135_files/135_txt.txt', 'rb', buffering=0)
 print(file)
 file.close()
+
+# Reading and Writing Opened Files
+# Read Methods
+# .read(size=-1):     reads file on number of size bytes; no arguments, None, or -1 reads the entire file
+# .readline(size=-1): reads at most size number of characters from the line, no arguments, None, or -1 reads
+#                     the entire line
+# .readlines():       reads the remaining lines from the file and returns them as a list
+
+# Examples
+# .read()
+with open('135_files/135_txt.txt', 'r') as reader:
+    print(reader.read())
+
+# .readline()
+with open('135_files/135_txt.txt', 'r') as reader:
+    print(reader.readline(5))
+    print(reader.readline(5))
+    print(reader.readline(5))
+    print(reader.readline(5))
+    print(reader.readline(5))
+
+# .readlines()
+with open('135_files/135_txt.txt', 'r') as reader:
+    print(reader.readlines())
+
+# Additionally .readlines() can be done using list()
+with open('135_files/135_txt.txt', 'r') as reader:
+    print(list(reader))
