@@ -111,7 +111,7 @@ print(file)
 file.close()
 
 # Reading and Writing Opened Files
-# Read Methods
+# Read Functions
 # .read(size=-1):     reads file on number of size bytes; no arguments, None, or -1 reads the entire file
 # .readline(size=-1): reads at most size number of characters from the line, no arguments, None, or -1 reads
 #                     the entire line
@@ -137,3 +137,39 @@ with open('135_files/135_txt.txt', 'r') as reader:
 # Additionally .readlines() can be done using list()
 with open('135_files/135_txt.txt', 'r') as reader:
     print(list(reader))
+
+# Iterating Over Each Line in the File
+# Iterate using .readline() function
+with open('135_files/135_txt.txt', 'r') as reader:
+    # Read an print line by line
+    line = reader.readline()
+
+    # EOF is an empty string
+    while line != '':
+        print(line, end='')
+        line = reader.readline()
+
+# Iterate using .readlines() function
+with open('135_files/135_txt.txt', 'r') as reader:
+    for line in reader.readlines():
+        print(line, end='')
+
+# SUGGESTED: Iterate over the file object itself
+with open('135_files/135_txt.txt', 'r') as reader:
+    for line in reader:
+        print(line, end='')
+
+# Write Functions
+# .write(string):   Writes a string to the file
+# .writelines(seq): Writes the sequence to the file with no line endings
+
+# Examples
+with open('135_files/135_txt.txt', 'r') as reader:
+    dog_breeds = reader.readlines()
+
+with open('135_files/135_txt.txt', 'w') as writer:
+    for breed in reversed(dog_breeds):
+        writer.write(breed)
+
+    # Alternatively the following does the same
+    # writer.writelines(reversed(dog_breeds))
