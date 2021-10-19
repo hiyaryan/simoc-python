@@ -27,7 +27,7 @@
 # CONTENTS
 # I.   Reading and Writing Files (Overview and .txt Files)
 # II.  Reading and Writing .csv Files
-# III. Reading, Parsing, and Writinging .json Files
+# III. Reading, Parsing, and Writing .json Files
 
 
 # I. READING AND WRITING FILES
