@@ -173,3 +173,52 @@ with open('135_files/135_txt.txt', 'w') as writer:
 
     # Alternatively the following does the same
     # writer.writelines(reversed(dog_breeds))
+
+# __file__
+# The relative pathname of the file from which it was loaded
+with open('135_files/135_txt.txt', 'r') as reader:
+    print(__file__)
+
+# Appending to a file
+# Append to a file using the mode char 'a'
+with open('135_files/135_txt.txt', 'a') as writer:
+    writer.write('\nBeagle')
+
+with open('135_files/135_txt.txt', 'r') as reader:
+    reader.read()
+
+# Reading and Writing Simultaneously
+d_path = '135_files/135_txt.txt'
+d_r_path = '135_files/135_txt_reversed.txt'
+with open(d_path, 'r') as reader, open(d_r_path, 'w') as writer:
+    dog_breeds = reader.readlines()
+    writer.writelines(reversed(dog_breeds))
+
+
+# Context Managers
+# Provides finer control of object files
+# Object files should be placed inside a custom clas
+
+class my_file_reader():
+    def __init__(self, file_path):
+        self.__path = file_path
+        self.__file_object = None
+
+    # __enter__ is equivalent to using a with statement
+    # In this Context Manager the file can open with additional functionality
+    def __enter__(self):
+        self.__file_object = open(self.__path)
+        return self
+
+    # __exit__ is equivalent to exiting a with statement block
+    # In this Context Manager the file can exit with additional functionality
+    def __exit__(self, type, val, tb):
+        self.__file_object.close()
+
+    # Additional methods here as required.
+
+
+# Use the Context Manager class in the same fashion as the with statement
+with my_file_reader('135_files/135_txt.txt') as reader:
+    # Perform custom class operations
+    pass
