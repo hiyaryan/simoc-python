@@ -16,6 +16,13 @@
 # .csv Files  https://docs.python.org/3/library/csv.html
 # .json Files https://docs.python.org/3/library/json.html
 
+# Additional resources
+# pandas library
+#   Description:
+#       An open-source library that provides high performance data analysis tools and easy
+#       to use data structures. This library is recommended when parsing CSV files with a lot of data.
+#   Link: https://realpython.com/python-csv/#parsing-csv-files-with-the-pandas-library
+
 
 # CONTENTS
 # I.   Reading and Writing Files (Overview and .txt Files)
@@ -222,3 +229,72 @@ class my_file_reader():
 with my_file_reader('135_files/135_txt.txt') as reader:
     # Perform custom class operations
     pass
+
+# II. READING AND WRITING CSV FILES
+# Import csv library to access functionality to read and write CSV files
+import csv
+
+# OPTION 1: Process the CSV file as a list of String elements
+with open('135_files/135_csv.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    line_count = 0
+
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {", ".join(row)}')
+            line_count += 1
+
+        else:
+            print(f'\t{row[0]} works in the {row[1]} department, and was born in {row[2]}.')
+            line_count += 1
+
+    print(f'Processed {line_count} lines.')
+
+# OPTION 2: Process the CSV into a dictionary
+with open('135_files/135_csv.csv', mode='r') as csv_file:
+    csv_reader = csv.DictReader(csv_file)
+    line_count = 0
+
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {", ".join(row)}')
+            line_count += 1
+
+        else:
+            print(f'\t{row["name"]} works in the {row["department"]} department, and was born in {row["birthday month"]}.')
+            line_count += 1
+
+    print(f'Processed {line_count} lines.')
+
+
+# Optional CSV reader Parameters
+# delimiter:  character separating each field; default=',' comma
+# quotechar:  character used to surround fields containing the delimiter; default='"' quote
+# escapechar: character used to escape the delimiter character if no quotes are used; default=no escape character
+
+# Writing CSV Files with csv library
+with open('135_files/135_csv.csv', mode='w') as employee_file:
+    employee_writer = csv.writer(employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+    employee_writer.writerow(['John Smith', 'Accounting', 'November'])
+    employee_writer.writerow(['Erica Meyers', 'IT', 'March'])
+
+
+# Optional quoting={} parameter:
+# 1. QUOTE_MINIMAL: quote fields only containing the delimiter
+# 2. QUOTE_ALL: quote all fields
+# 3. QUOTE_NONNUMERIC: quote fields containing text, convert all numeric fields to float types
+# 4. QUOTE_NONE: escape delimiters, must provide value for escapechar optional parameter
+
+# Writing CSV from a Dictionary
+with open('135_files/135_csv.csv', mode='w') as csv_file:
+    fieldnames = ['emp_name', 'dept', 'birth_month']
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+    writer.writeheader()
+    writer.writerow({'emp_name': 'John Smith', 'dept': 'Accounting', 'birth_month': 'November'})
+    writer.writerow({'emp_name': 'Erica Meyers', 'dept': 'IT', 'birth_month': 'March'})
+
+# Note: pandas library is an open-source library that provides high performance data analysis tools and easy
+# to use data structures. This library is recommended when parsing CSV files with a lot of data.
+# Reference: https://realpython.com/python-csv/#parsing-csv-files-with-the-pandas-library
