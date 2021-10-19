@@ -289,12 +289,12 @@ with open('135_files/135_csv.csv', mode='w') as employee_file:
 
 # Writing CSV from a Dictionary
 with open('135_files/135_csv.csv', mode='w') as csv_file:
-    fieldnames = ['emp_name', 'dept', 'birth_month']
+    fieldnames = ['name', 'department', 'birthday month']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
     writer.writeheader()
-    writer.writerow({'emp_name': 'John Smith', 'dept': 'Accounting', 'birth_month': 'November'})
-    writer.writerow({'emp_name': 'Erica Meyers', 'dept': 'IT', 'birth_month': 'March'})
+    writer.writerow({'name': 'John Smith', 'department': 'Accounting', 'birthday month': 'November'})
+    writer.writerow({'name': 'Erica Meyers', 'department': 'IT', 'birthday month': 'March'})
 
 # Note: pandas library is an open-source library that provides high performance data analysis tools and easy
 # to use data structures. This library is recommended when parsing CSV files with a lot of data.
@@ -302,3 +302,53 @@ with open('135_files/135_csv.csv', mode='w') as csv_file:
 
 
 # III. READING, PARSING, AND WRITING JSON FILES
+# Python supports JSON natively
+import json
+
+# Python Objects to JSON Conversion
+# dict             -> object
+# list, tuple      -> array
+# str              -> string
+# int, long, float -> number
+# True             -> true
+# False            -> false
+# None             -> null
+
+data = {
+    "president": {
+        "name": "Zaphod Beeblebrox",
+        "species": "Betelgeusian"
+    }
+}
+
+# What happens after a computer processes a lot of information?
+#   It needs to take a data dump().
+
+# Write JSON object to file
+with open("135_files/135_json.json", 'w') as write_file:
+    # Function arguments
+    #   - arg 1: data object to be serialized
+    #   - arg 2: file-like object to which the bytes will be written
+    json.dump(data, write_file)
+
+# This writes the JSON object to a String in memory
+json_string = json.dumps(data)
+print(json_string)
+
+# Useful keyword arguments
+# Both dump() and dumps() take the same arguments
+json_string = json.dumps(data)
+print(json_string)
+
+# indent: changes whitespace of object making it more readable
+json_string = json.dumps(data, indent=4)
+print(json_string)
+
+# separators: changes the format of the json object; default: (", ", ": ")
+# common alternative is to remove all whitespace: (",", ":")
+json_string = json.dumps(data, separators=(",", ":"))
+print(json_string)
+
+# Reference more keywords here: https://docs.python.org/3/library/json.html#basic-usage
+
+# Deserializing JSON
