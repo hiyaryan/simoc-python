@@ -230,6 +230,7 @@ with my_file_reader('135_files/135_txt.txt') as reader:
     # Perform custom class operations
     pass
 
+
 # II. READING AND WRITING CSV FILES
 # Import csv library to access functionality to read and write CSV files
 import csv
@@ -298,3 +299,6 @@ with open('135_files/135_csv.csv', mode='w') as csv_file:
 # Note: pandas library is an open-source library that provides high performance data analysis tools and easy
 # to use data structures. This library is recommended when parsing CSV files with a lot of data.
 # Reference: https://realpython.com/python-csv/#parsing-csv-files-with-the-pandas-library
+
+
+# III. READING, PARSING, AND WRITING JSON FILES
