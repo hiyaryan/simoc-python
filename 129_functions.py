@@ -14,8 +14,8 @@
 # Resource: https://www.w3schools.com/python/python_functions.asp
 
 # CONTENTS
-#    I. Function Example
-#   II. Built-in Functions
+#    I. Function example (RE: Task 128)
+#   II. Built-in Functions for SIMOC implementation
 #  III. User-defined Functions
 #   IV. Anonymous Functions
 #    V. Calling a Function
@@ -28,86 +28,34 @@ def my_function():
     
 my_function()
 
-# II. BUILT-IN FUNCTIONS
-# List of all 69 built-in functions
-# abs()
-# delattr()
-# hash()
-# memoryview()
-# set()
-# all(
-# dict()
-# help()
-# min()
-# setattr()
-# any()
-# dir()
-# hex()
-# next()
-# slice()
-# ascii()
-# divmod()
-# id()
-# object()
-# sorted()
-# bin()
-# enumerate()
-# input()
-# oct()
-# staticmethod()
-# bool()
-# eval()
-# int()
-# open()
-# str()
-# breakpoint()
-# exec()
-# isinstance()
-# ord()
-# sum()
-# bytearray()
-# filter()
-# issubclass()
-# pow()
-# super()
-# bytes()
-# float()
-# iter()
-# print()
-# tuple()
-# callable()
-# format()
-# len()
-# property()
-# type()
-# chr()
-# frozenset()
-# list()
-# range()
-# vars()
-# classmethod()
-# getattr()
-# locals()
-# repr()
-# zip()
-# compile()
-# globals()
-# map()
-# reversed()
-# __import__()
-# complex()
-# hasattr()
-# max()
-# round()
+# II. BUILT-IN FUNCTIONS (reduced list)
+# Here is a list of built-in functions that might come in handy for our implementation
+# This is not a complete list - for all future work, please refer to the Python documentation here for all built-in functions: https://docs.python.org/3/library/functions.html
+# You can also see a full list of built-in functions in 128_methods_and_function.py
+#
+# abs(x) - Returns the absolute value of a number, x
+# bool([value]) - Converts the given value to true/false. Returns False for None, False, zero value in any type (0, 0.0, etc.), empty lists, empty tuples, empty strings, empty dictionaries.
+# float([value]} - Returns a float number, taken from the number/string value
+# int([x]) - Returns an integer taken from the number/string x
+# len(o) - Returns a number per the length of object o, where o is a sequence or collection
+# max(n1, n2, n3....nm) - Returns the max value of the items provided. These are compared alphabetically, if the args are strings.
+# max(iterable) - Returns the max value inside of an iterable (e.g. list, str, tuple, dict)
+# min(n1, n2, n3....nm) - Returns the min value of the items provided. These are compared alphabetically, if the args are strings.
+# min(iterable) - Returns the min value inside of an iterable (e.g. list, str, tuple, dict)
+# next(iterator) - Returns the next item from an iterator
+# round(number) - Returns number rounded to nearest integer
+# round(number, ndigits) - Returns number rounded to ndigits
+# str(x) - Returns x converted to string
+# sum(iterable) - Returns sum of all items in the iterable (usually numbers)
+# sum(iterable, start) - Returns sum of all items in the iterable + start
+
+
 
 # III. USER-DEFINED FUNCTIONS
 # Define a function using the keyword def followed by the name, parenthesis then a colon
 # The body is then defined on the next indentation
 def hello():
     print("Hello world!")
-
-    # return statement is optional
-    return
 
 
 # Call the function directly using parenthesis and passing any required arguments
