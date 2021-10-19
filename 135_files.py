@@ -53,7 +53,6 @@ with open('135_files/135_txt.txt') as reader:
     # process file contents
     print(reader.read())
 
-
 # Second argument of open() function: mode
 # Mode is a string that may take multiple chars: default is 'r'
 # It describes how the file should be opened
@@ -76,7 +75,7 @@ with open('135_files/135_txt.txt', 'r') as reader:
 
 # 1. Text File Types
 # These files are open as follows
-file = open('135_files/135_txt.txt') # default mode: "r"
+file = open('135_files/135_txt.txt')  # default mode: "r"
 file.close()
 
 file = open('135_files/135_txt.txt', 'r')
@@ -230,7 +229,6 @@ with my_file_reader('135_files/135_txt.txt') as reader:
     # Perform custom class operations
     pass
 
-
 # II. READING AND WRITING CSV FILES
 # Import csv library to access functionality to read and write CSV files
 import csv
@@ -262,11 +260,11 @@ with open('135_files/135_csv.csv', mode='r') as csv_file:
             line_count += 1
 
         else:
-            print(f'\t{row["name"]} works in the {row["department"]} department, and was born in {row["birthday month"]}.')
+            print(
+                f'\t{row["name"]} works in the {row["department"]} department, and was born in {row["birthday month"]}.')
             line_count += 1
 
     print(f'Processed {line_count} lines.')
-
 
 # Optional CSV reader Parameters
 # delimiter:  character separating each field; default=',' comma
@@ -279,7 +277,6 @@ with open('135_files/135_csv.csv', mode='w') as employee_file:
 
     employee_writer.writerow(['John Smith', 'Accounting', 'November'])
     employee_writer.writerow(['Erica Meyers', 'IT', 'March'])
-
 
 # Optional quoting={} parameter:
 # 1. QUOTE_MINIMAL: quote fields only containing the delimiter
@@ -305,7 +302,8 @@ with open('135_files/135_csv.csv', mode='w') as csv_file:
 # Python supports JSON natively
 import json
 
-# Python Objects to JSON Conversion
+# Serializing JSON
+# Python Objects to JSON Serialization Conversion
 # dict             -> object
 # list, tuple      -> array
 # str              -> string
@@ -352,3 +350,76 @@ print(json_string)
 # Reference more keywords here: https://docs.python.org/3/library/json.html#basic-usage
 
 # Deserializing JSON
+# JSON to Python Object Deserialization Conversion
+# object       -> dict
+# array        -> list
+# string       -> str
+# number(int)  -> int
+# number(real) -> float
+# true         -> True
+# false        -> False
+# null         -> None
+
+# Note: The conversion above is not a perfect conversion
+#       Be aware that encoding then decoding may result in a new data type.
+#       e.g. encoding a tuple into JSON then decoding returns a list
+
+with open("135_files/135_json.json", 'r') as read_file:
+    data = json.load(read_file)
+    print(data)
+
+# A String in JSON format may be converted to JSON using the loads() function
+json_string = """
+{
+    "researcher": {
+        "name": "Ford Prefect",
+        "species": "Betelgeusian",
+        "relatives": [
+            {
+                "name": "Zaphod Beeblebrox",
+                "species": "Betelgeusian"
+            }
+        ]
+    }
+}
+"""
+
+data = json.loads(json_string)
+print(data)
+
+
+# Encoding Custom Types
+# Translating custom objects into JSON
+
+# Provide an encoding function to the dump() methods default parameter
+# json module will call this function on any objects natively serializable
+def encode_complex(z):
+    if isinstance(z, complex):
+        return z.real, z.imag
+    else:
+        type_name = z.__class__.__name__
+        raise TypeError(f"Object of type '{type_name}' is not JSON serializable")
+
+
+complex_number = json.dumps(9 + 5j, default=encode_complex)
+print(complex_number)
+
+
+# Another approach sis to subclass the standard JSONEncoder and override its default() method
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, z):
+        if isinstance(z, complex):
+            return z.real, z.imag
+        else:
+            return super().default(z)
+
+
+complex_number = json.dumps(2 + 5j, cls=ComplexEncoder)
+print(complex_number)
+
+encoder = ComplexEncoder()
+complex_number = encoder.encode(3 + 6j)
+print(complex_number)
+
+# Decoding Custom Types
+# Translating JSON into a custom object
