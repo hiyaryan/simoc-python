@@ -392,7 +392,7 @@ print(data)
 # Translating custom objects into JSON
 
 # Provide an encoding function to the dump() methods default parameter
-# json module will call this function on any objects natively serializable
+# json module will call this function on any objects not natively serializable
 def encode_complex(z):
     if isinstance(z, complex):
         return z.real, z.imag
@@ -422,4 +422,33 @@ complex_number = encoder.encode(3 + 6j)
 print(complex_number)
 
 # Decoding Custom Types
-# Translating JSON into a custom object
+# Translating JSON into a custom object; including the metadata to reconstruct an object
+# What is the minimum amount of information that is both necessary and sufficient to recreate this object?
+
+# json module expects all custom types to be expressed as objects in JSON standard
+# Example below shows metadata __complex__ holding the information that the following values are complex components
+complex_data = [
+    {
+        "__complex__": "true",
+        "real": 42,
+        "imag": 36
+    },
+    {
+        "__complex__": "true",
+        "real": 64,
+        "imag": 11
+    }
+]
+
+
+def decode_complex(dct):
+    # Verify the key exists
+    if "__complex__" in dct:
+        return complex(dct["real"], dct["imag"])
+
+    return dct
+
+
+z = decode_complex(complex_data)
+print(f'{z}: type={type(z)}')
+
