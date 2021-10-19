@@ -1,0 +1,1 @@
+This directory contains an interpolation script that runs a fake sensor on one thread and on another thread it listens for data from the fake sensor and interpolates it.  After gaining advice from Ezio, a new version is made taking his advice into account. The old version and his advice are shared as well so you can readily see the differnces.
