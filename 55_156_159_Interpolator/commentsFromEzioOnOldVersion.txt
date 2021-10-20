@@ -1,0 +1,134 @@
+ A week or two ago I put together a little python script that runs two threads, one being a fake sensor making fake data, and another listening to the thread and interpolating the data.
+>
+
+One thing to keep in mind is that Python has something called the
+Global Interpreter Lock (aka GIL), which means that even if you have
+two threads, they will not be executed at the same time.  This is
+generally not a problem, especially if you are dealing with an
+I/O-bound problem, since you can e.g. still have a thread waiting for
+keyboard input while another thread is looping over some code.
+However it's not an optimal solution if you are trying to solve a
+CPU-bound problem, since having two threads won't make the program go
+twice as fast.
+
+In general, while threads are sometimes useful in other languages,
+they are not commonly used in Python (also because they are generally
+hard to debug, can create deadlocks, etc.).  Depending on the exact
+problem you are trying to solve, there are usually other tools that
+you can use, such as asyncio or multiprocess.
+
+> At the end of the run, it saves two .csv files, one for raw "fake" sensor data, and the other for interpolated data.
+>
+> This was before we had our meeting where we were told that interpolation of data would not be necessary. I put it together both to practice Python and also to demonstrate to the group the concept of interpolation, which I felt was an important topic for sensors because I did interpolation of sensor data when I took an instrumentation course a long time ago when I had studied mechanical engineering.
+>
+
+I remember this discussion and Kai saying that we can set up a time
+server, but can you elaborate a bit on why you needed interpolation?
+What problem did it solve?
+
+> If you want to take a look at my code and make any comments about how it was written you are welcome to do so. One of my group members already told me that my use of camelCase is not appropriate for Python and that I should be using snake_case.
+>
+
+I wonder if it would be more useful if you uploaded this on GitHub
+instead (maybe on https://urldefense.com/v3/__https://github.com/hiyaryan/simoc-python__;!!IKRxdwAv5BmarQ!IJOb_XG61LQA3rrkSXPzem1KCPcGIDK2RZDHWByrkW83E5BuVMCj3YbxwHXEEN4$  if that's
+the repo the group set up?).  If you add it as a pull request, I will
+be able to add inline comments.
+
+Just a few things that caught my eyes (I didn't try to follow the
+logic of the program in detail):
+* In general it's better to write <80 chars per line, and as you said
+use snake_case rather than camelCase.  The code is also a bit
+inconsistent with spacing before/after/around operators and other
+syntax.  These conventions are described in the PEP 8.
+* You can use f-string for string formatting, the "var: %.2f" %
+3.14159 is called old-style formatting and has been replaced first by
+the str.format() method and then by f-strings.  This also replaces
+things like str(var) + ' ' + str(var).
+* You can/should use the with-statement to open files, since they
+auto-close them without having to call .close() explicitly.  Context
+managers are another topic that might be interesting to cover.
+* By default all functions return None unless you return something
+else explicitly (or if you just use a bare return).  There is no need
+to have a bare return at the end of the function.
+* I have a feeling some of the while loops could be converted in for
+loops.  Indexes are seldomly used in Python.
+* At line 67/68 you could have used unpacking to do currentTime,
+currentVal = fakePair.
+* At line 80 you could have just done firstPair = [startTime,
+startVal], even though in this situation a tuple would be better than
+a list (a rule of thumb if you have a C background is to use tuples
+where you would use structs, lists where you would use arrays;
+alternatively if you have a DB background, each record (row) in a DB
+is a tuple, a sequence of records or a column in a table are
+represented as a list).
+* Python already performs true division by default, so that int/int
+will give you a float without having to do int/float (Python 2 used to
+return int for int/int).
+* Python comes with "batteries included": it already has a module to
+read/write csv files, just import csv.
+
+While most of those things are not wrong per se, it's very common that
+inexperienced Python users are unaware of several Python features that
+can make your life easier.  Oftentimes a lot of extra code can be
+removed just by using these features.
+
+
+
+
+
+
+
+----
+
+
+
+On Wed, Oct 13, 2021 at 1:21 AM Gregory Ross <grross1@asu.edu> wrote:
+>
+> Thank you for the feedback Ezio.  It looks like there are a lot of things I could have done differently to look into. We should be using the repo so you can add comments that way.
+>
+
+You can discuss this with the others, since they likely want to learn
+about these things too.
+
+> Perhaps the time server will be sufficient without the need for interpolation. My first thought was that the sensors may not be reading all at the same time and so their measurement would be interpolated to a specific set of time steps.  But also, if there was a sensor that accumulated data less frequently than another sensor, interpolation can make the data appear to change at every increment rather than not changing at all between measurements and jumping like a step in a staircase. Assuming every sensor is read from at the same time on a synchronized clock, and there is not a sufficient delay between requesting a measurement and getting it (which might exist on some specific digital sensors only have new data available on intervals, like this handheld sensor that apparently sends out a data point every 2 seconds ( https://urldefense.com/v3/__https://www.amazon.com/Portable-Digital-Temperature-Humidity-Diagnosis/dp/B01KTJL6OK/ref=pd_day0fbt_img_2/133-8028483-5176943?pd_rd_w=wOlYC&pf_rd_p=bcb8482a-3db5-4b0b-9f15-b86e24acdb00&pf_rd_r=WMGN14PDPJQBDPZR0RBM&pd_rd_r=4904863f-6087-4f22-8322-8a291ce830b3&pd_rd_wg=IzK4f&pd_rd_i=B01KTJL6OK&psc=1__;!!IKRxdwAv5BmarQ!Mi_XJC8tRV1dC_cqBHQXlGKWiymj9OdeL_QkJJmqbkN33EkPsMANYVU_3zk-UNY$   ) ), perhaps it should not be necessary.
+>
+> Analog sensors would probably generally provide on demand voltage data, and many digital sensors may provide a sufficiently fast response as to be negligible. I guess it depends if the data is sent from the sensor to your computer in a stream or if your computer takes a measurement from the sensor on demand.
+>
+> My little script kind of assumed a sensor not synchronized to some global time and just adjusting the data for global time steps.
+>
+
+For the synchronization/interpolation I see a few different potential problems:
+1. if the timestamp comes from the machine doing the reading, we have
+to make sure they are all synched (easy to do with a time server as
+Kai mentioned); if it comes from the sensors it might be more
+difficult to calibrate;
+2. sensors might have delays as you mentioned, but I would expect them
+to be small enough to be negligible;
+3. the readings on different sensors might not happen at the same
+time, both because of timing and frequency -- this should also be
+negligible;
+
+I think/hope that all values will be accurate within a few seconds, so
+I wouldn't worry too much about that.  Even if we read one value at
+18m26.8s and another at 18m27.4s, we can probably round them both to
+18m27s, and even if one of the two values actually had a 2 seconds
+delay, I don't think it would matter too much, especially while
+dealing with gasses in the atmosphere.
+
+> Also, Kai was talking about measuring the CO2 amounts at 3 different heights in the greenhouse because the CO2 can pool. If you had 3 sensors, you would know the concentration at those specific points but not in the areas in between. Interpolation could also be used to guess the levels between sensors and even beyond sensors (like if the lowest sensor was 1 meter above the ground and the concentration got higher from ceiling to floor, you could guess that below 1 meter it is even more concentrated.
+>
+
+I'm also a bit skeptical about interpolation -- even if it might look
+nicer to have some intermediate values to make the graph smoother or
+try to extrapolate CO2 concentration at certain points, I'd rather
+keep the source data true to the readings, and possibly interpolate
+down the line (e.g. while plotting the graph).  There's also the risk
+that extrapolated data are wrong (e.g. in theory the CO2 could pool
+below the O2 like oil on water instead of being a linear gradient).
+
+Regardless, you raised some good points, and once we have the sensors
+and know more about their accuracy/delay, we might revise this
+discussion.  The script you wrote is also a good exercise and a
+learning opportunity for you and the rest of the team.
+
+--Ezio
