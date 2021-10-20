@@ -188,3 +188,110 @@ example_obj.print(200)
 
 print("test_obj is an instance of ABSClass? ", isinstance(test_obj, ABSClass))
 print("example_obj is an instance of ABSClass? ", isinstance(example_obj, ABSClass))
+
+
+# III. ENCAPSULATION
+# def. Encapsulation-a way to access required variables without providing the program full-fledged
+#      access to any of those variables
+
+# Python provides access to all variables and methods globally, therefore, encapsulation can improve control
+# over input and dataflow while tightening security
+
+# The following demonstrates how easily accessible variables are
+class Person:
+    def __init__(self, name, age=0):
+        self.name = name
+        self.age = age
+
+    def display(self):
+        print(self.name)
+        print(self.age)
+
+
+person = Person('Dev', 30)
+# Accessing using class methods
+person.display()
+# Accessing directly from outside
+print(person.name)
+print(person.age)
+
+
+# 1. Encapsulating variables by convention
+# Using a single underscore '_' tells programmers the variable must only be accessed within th scope of the class
+
+# The following demonstrates how to represent a variable as protected
+class Person:
+    def __init__(self, name, age=0):
+        self.name = name
+        self._age = age  # _age is a protected variable by convention
+
+    def display(self):
+        print(self.name)
+        print(self._age)
+
+
+person = Person('Dev', 30)
+# Accessing using class methods
+person.display()
+# Accessing directly from outside
+print(person.name)
+print(person._age)  # Variable is still accessible, however, '_' tells the programmer not to access it like this
+
+
+# 2. Encapsulating variables by Name Mangling
+# def. Name Mangling-making a variable private by using double underscores, in which case accessing from the outside
+#      throws an error; the variable is only accessible within the class it is declared
+
+# Python interpreter rewrites any variable leading with '__' as _Classname__
+# e.g. __Var is rewritten by the interpreter as __Classname__Var
+
+class Person:
+    def __init__(self, name, age=0):
+        self.name = name
+        self.__age = age  # _age is a protected variable by convention
+
+    def display(self):
+        print(self.name)
+        print(self.__age)
+
+
+person = Person('Dev', 30)
+# Accessing using class methods
+person.display()
+# Accessing directly from outside
+print(person.name)
+# print(person.__age)
+# The previous line throws the following error:
+
+# Traceback (most recent call last):
+#   File "/Users/Ryan/Desktop/simoc-python/140_object_oriented_concepts.py", line 263, in <module>
+#     print(person.__age)  # Variable is still accessible, however, '_' tells the programmer not to access it like this
+# AttributeError: 'Person' object has no attribute '__age'
+
+# This error is thrown because the leading '__' told the interpreter to rename __age as _Classname__age, therefore,
+# __age does not exist in memory effectively making the variable private
+
+
+# 3. Using Getters and Setters to access private variables
+class Person:
+    def __init__(self, name, age=0):
+        self.name = name
+        self.__age = age  # _age is a protected variable by convention
+
+    def display(self):
+        print(self.name)
+        print(self.__age)
+
+    def get_age(self):
+        print(self.__age)
+
+    def set_age(self, age):
+        self.__age = age
+
+
+person = Person('Dev', 30)
+# Accessing using class methods
+person.display()
+# Accessing directly from outside
+person.set_age(35)
+person.get_age()
