@@ -14,12 +14,13 @@
 # Resource: https://www.w3schools.com/python/python_functions.asp
 
 # CONTENTS
-#    I. Function example (RE: Task 128)
-#   II. Built-in Functions for SIMOC implementation
-#  III. User-defined Functions
-#   IV. Anonymous Functions
-#    V. Calling a Function
-#   VI. Function Arguments
+#    I. Function Example (RE: Task 128)
+#   II. Built-in functions for SIMOC application
+#  III. User-defined functions
+#   IV. Best practices
+#    V. Anonymous/Lambda functions
+#   VI. Calling a function
+#  VII. Function arguments
 
 
 # I. Function example (this just prints out the string "This is my function!"
@@ -76,7 +77,7 @@ hello()
 # more functions instead. It is easier to understand a function when it has a simple use.
 
 
-# IV. ANONYMOUS FUNCTIONS/LAMBDA FUNCTIONS
+# V. ANONYMOUS FUNCTIONS/LAMBDA FUNCTIONS
 # Summary
 #     Anonymous functions (AKA 'Lambda functions') are functions that are defined without a name, and are therefore not directly called. These functions...
 #         1. Are not defined with keyword "def", instead using the "lambda" keyword
@@ -117,7 +118,7 @@ result = map(lambda x: x+3, example_list)
 # This could also be cast to another list by encapsulating the right side in list(__)
 
 
-# V. CALLING A FUNCTION
+# VI. CALLING A FUNCTION
 # Calling a function is executing a previously defined function
 def greet(name):
     print(f'Hello {name}.') #please note this is 'f-string' formatting. More info here: https://www.geeksforgeeks.org/formatted-string-literals-f-strings-python/
@@ -127,7 +128,7 @@ def greet(name):
 greet("Ryan")
 
 
-# VI. FUNCTION ARGUMENTS
+# VII. FUNCTION ARGUMENTS
 # There a 4 types of function arguments
 #   1. Required arguments
 #   2. Keyword arguments
