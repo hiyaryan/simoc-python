@@ -129,3 +129,62 @@ print(circle.fact())  # fact() is not defined in Circle, therefore the parent de
 print(square.fact())  # fact() is defined in Square, therefore the child definition is used
 print(circle.area())
 
+
+# II. ABSTRACTION
+# def. Abstraction-a feature wherein the user is kept unaware of the basic implementation of a function
+#      property; the user is able to view basic functionalities but the internal details are hidden
+
+# Syntax:
+# from abc import ABC
+# class Abs_class(ABC):
+#   # abstract methods
+#   # class methods
+
+from abc import ABC, abstractmethod
+
+
+class ABCClass(ABC):
+    # normal method
+    def method(self):
+        # method definition
+        pass
+
+    @abstractmethod
+    def abs_method(self):
+        # abs_method definition
+        pass
+
+
+# Abstraction Example
+from abc import ABC, abstractmethod
+
+
+class ABSClass(ABC):
+    def print(self, x):
+        print(f"Passed value: {x}")
+
+    @abstractmethod
+    def task(self):
+        print("Inside the ABSClass task abstract method")
+
+
+class TestClass(ABSClass):
+    def task(self):
+        print("Inside the TestClass task method")
+
+
+class ExampleClass(ABSClass):
+    def task(self):
+        print("Inside the ExampleClass task method")
+
+
+test_obj = TestClass()
+test_obj.task()
+test_obj.print(100)
+
+example_obj = ExampleClass()
+example_obj.task()
+example_obj.print(200)
+
+print("test_obj is an instance of ABSClass? ", isinstance(test_obj, ABSClass))
+print("example_obj is an instance of ABSClass? ", isinstance(example_obj, ABSClass))
