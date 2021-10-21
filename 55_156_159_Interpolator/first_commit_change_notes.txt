@@ -1,3 +1,4 @@
+Since the first changes were ma
 Changes implemented per suggestions (even if just hints that are optional, for the sake of understanding):
 1. Make spacing more even.
 2. Remove camelCase and replace with snake_case
