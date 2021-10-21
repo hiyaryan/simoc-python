@@ -91,7 +91,7 @@ def fib(n):
         a, b = b, a+b
         
 # Called via:
-print(list(fib(n))) # where n is the number of fibonacci numbers to print
+print(list(fib(1))) # where 1 is replaced with the number of fibonacci numbers to print
 
 
 # V. ADDITIONAL RESOURCES
