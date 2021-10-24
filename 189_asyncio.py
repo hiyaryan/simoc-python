@@ -189,3 +189,132 @@ if __name__ == "__main__":
     r1, r2, r3 = asyncio.run(main())
     print()
     print(f"r1: {r1}, r2: {r2}, r3: {r3}")
+
+
+# III. ASYNC IO DESIGN PATTERNS
+
+# 1. Chaining Coroutines
+# Coroutines can be chained together allowing programs to be broken into smaller, manageable, recyclable coroutines
+# Ex. Chaining Coroutines
+print("\n\t# Ex. Async IO Pattern: Chaining Coroutines")
+
+
+async def part1(n: int) -> str:
+    i = random.randint(0, 10)
+    print(f"part1({n}) sleeping for {i} seconds.")
+    await asyncio.sleep(i)
+    result = f"result{n}-1"
+    print(f"Returning part1({n}) == {result}.")
+    return result
+
+
+async def part2(n: int, arg: str) -> str:
+    i = random.randint(0, 10)
+    print(f"part2({n, arg}) sleeping for {i} seconds.")
+    await asyncio.sleep(i)
+    result = f"result{n}-2 derived form {arg}"
+    print(f"Returning part2({n, arg}) == {result}.")
+    return result
+
+
+async def chain(n: int) -> None:
+    start = time.perf_counter()
+    p1 = await part1(n)
+    p2 = await part2(n, p1)
+    end = time.perf_counter() - start
+    print(f"-->Chained result{n} => {p2} (took {end:0.2f} seconds).")
+
+
+async def main(*args):
+    await asyncio.gather(*(chain(n) for n in args))
+
+
+if __name__ == "__main__":
+    import sys
+    random.seed(444)
+    args = [1, 2, 3] if len(sys.argv) == 1 else map(int, sys.argv[1:])
+    start = time.perf_counter()
+    asyncio.run(main(*args))
+    end = time.perf_counter() - start
+    print(f"Program finished in {end:0.2f} seconds.")
+
+
+# 2. Using a Queue
+# asyncio package provides queue classes similar to those used in the queue module
+# There is no chaining between producer (queue-er) and consumer (dequeue-er)
+
+# The Queue Design
+# 1. Async IO can be structured using any number of unassociated producers all adding items to a queue
+# 2. Producers may add items at any time while consumers pull items as they queue at any time
+# 3. The amount of time to queue or dequeue takes a variable amount of time
+# 4. The queue serves as throughput allowing indirect communication between producers and consumers
+
+# Ex. Async IO Pattern: Queues
+print("\n\t# Ex. Async IO Pattern: Queues")
+
+import itertools as it
+import os
+
+
+# Helper function returns a random string
+async def make_item(size: int=5) -> str:
+    return os.urandom(size).hex()
+
+
+# Helper function to randomly put coroutine to sleep with a fractional-second performance counter
+# and a random integer
+async def rand_sleep(caller=None) -> None:
+    i = random.randint(0, 10)
+    if caller:
+        print(f"{caller} sleeping for {i} seconds.")
+    await asyncio.sleep(i)
+
+
+# Producer puts 1 to 5 items into the queue, each item a tuple (i, t) where i is a random string
+# and t is the time the producer attempts to put the tuple into the queue
+async def produce(name: int, q: asyncio.Queue) -> None:
+    n = random.randint(0, 10)
+    for _ in it.repeat(None, n):  # Synchronous loop for each single producer
+        await rand_sleep(caller=f"Producer {name}")
+        i = await make_item()
+        t = time.perf_counter()
+        await q.put((i, t))
+        print(f"Producer {name} added <{i}> to queue.")
+
+
+# Consumer pulls an item out, calculates the elapsed time the item sat in the queue using the timestamp
+# the item was put in the queue with
+async def consume(name: int, q: asyncio.Queue) -> None:
+    while True:
+        await rand_sleep(caller=f"Consumer {name}")
+        i, t = await q.get()
+        now = time.perf_counter()
+        print(f"Consumer {name} got element <{i}> in {now-t:0.5f} seconds")
+        q.task_done()
+
+
+
+async def main(nprod: int, ncon: int):
+    q = asyncio.Queue()
+    producers = [asyncio.create_task(produce(n, q)) for n in range(nprod)]
+    consumers = [asyncio.create_task(consume(n, q)) for n in range(ncon)]
+    await asyncio.gather(*producers)
+    await q.join()  # Implicitly awaits consumers
+    for c in consumers:
+        c.cancel()
+
+
+if __name__ == "__main__":
+    import argparse
+    random.seed(444)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--nprod", type=int, default=5)
+    parser.add_argument("-c", "--ncon", type=int, default=10)
+    ns = parser.parse_args()
+    start = time.perf_counter()
+    asyncio.run(main(**ns.__dict__))
+    elapsed = time.perf_counter() - start
+    print(f"Program completed in {elapsed:0.5f} seconds.")
+
+
+# III. ASYNC IO'S ROOTS IN GENERATORS
