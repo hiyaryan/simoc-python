@@ -10,14 +10,19 @@
 # and the alternate reset method they propose which tends to crash
 # in about 30 minutes.
 
-# @author Greg Ross, version 2, October 31,2021
+# @author Greg Ross, version 3, November 1,2021
 
 # Normal Packages
 import os
 import sys
 import time
 # Special packages
-import busio
+try:
+    import busio
+except RuntimeError:
+    print("Script failed during busio import. Probably the sensor is not plugged in.")
+    sys.exit()
+    
 import adafruit_scd30
 
 # export statment is required to import board
@@ -27,12 +32,10 @@ import adafruit_scd30
 # This system call sometimes works on my computer but usually fails
 os.system("export BLINKA_MCP2221=1")
 
-try:
-   os.environ["BLINKA_MCP2221"]
-except KeyError:
-   print(f'Before running this program, type "export BLINKA_MCP2221=1"'
-         f'in the same terminal window.')
-   sys.exit()
+if 'BLINKA_MCP2221' not in os.environ:
+    print(f'Before running this program, type "export BLINKA_MCP2221=1"'
+          f'in the same terminal window.')
+    sys.exit()
 
 import board # For MCP-2221
 
@@ -60,21 +63,29 @@ scd = adafruit_scd30.SCD30(i2c)
 # but it also caused issues after testing, so it is best never to
 # invoke the reset method.
 
-
 # Alitude, set with with scd.altitude = ALTITUDE (uint16, height above sea level in meters)
 # Seting altitude is disregarded when ambient pressure is given to the system.
 # Ambient Pressure, set with scd.ambient_pressure = PRESSURE_VALUE. Default
 # value is 1013.25 mBar   uint16 700 to 1400 range, 0 sets to default.
+
+# The measurement interval can be changed with this, but it still seems to take measurements
+# at random time intervals just can be set "close" to this interval. The fastest interval
+# combined with interpolation or just most recent reading seems like the best way to me.
+# Can be increased to make a recent reading closer to another time step if we tried
+# to synchronize it. Interpolation can be done either before data is saved or after
+# data is retrieved from storage but prior to packaging in JSON.
+# scd.measurement_interval = INTERVAL 
+
 def get_altitude():
-   if len(sys.argv) > 1:
-      if sys.argv[1].isnumeric():
-         altitude = int(sys.argv[1])
-         print(f"Altitude entered: {altitude} m")
-         scd.altitude = altitude
-      else:
-         print("Parameter must be an int for altitude, defaulting to 1013.25 mBar")
-   else:
-      print("Defaulting to 1013.25 mBar")
+    if len(sys.argv) > 1:
+        try:
+            altitude = int(sys.argv[1])
+            print(f"Altitude entered: {altitude} m")
+            scd.altitude = altitude
+        except ValueError:
+            print("Parameter must be an int for altitude, defaulting to 1013.25 mBar")
+    else:
+        print("No altitude entered. Defaulting to 1013.25 mBar")
 
 def sensor_loop():
     # If the sensor does not respond to 50 requests a runtime error is thrown,
@@ -98,13 +109,13 @@ def sensor_loop():
             # Ordinarily this should be I2C read error: max entries reached
             print(e) # Print the error
             error_count += 1
-            if(error_count > 10):
+            if error_count > 10:
                 print("SENSOR FAILURE... killing program")
                 sys.exit() # Kill the program because something bad is happening
-        # New sensor data is only available once every 2 seconds, but here we
-        # poll every 0.5 seconds to try and catch every available update,
-        # even if there was a failure to reach the SCD-30.
-        time.sleep(0.5)
+        # New sensor data is only available once every 2 seconds by default, but here we
+        # poll every 0.5 seconds by default, (or 4 times the measurement interval), to try
+        # and catch every available update, even if there was a failure to reach the SCD-30.
+        time.sleep(scd.measurement_interval/4)
 
 #Start the sensor
 get_altitude()
