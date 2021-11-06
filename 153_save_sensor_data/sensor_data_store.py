@@ -10,6 +10,7 @@ import os
 import sys
 import csv
 import time
+from pathlib import Path
 # Special packages
 try:
     import busio
@@ -32,12 +33,8 @@ if 'BLINKA_MCP2221' not in os.environ:
           ' in the same terminal window.')
     sys.exit()
 
-import board # For MCP-2221
+import board  # For MCP-2221
 
-# From Carter's Script at Adafruit, it is recommended to start with a frequency
-# of 50 Khz due to "Clock Stretching".
-i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
-scd = adafruit_scd30.SCD30(i2c)
 
 
 # Variables to enhance precision of sensor
@@ -65,12 +62,31 @@ scd = adafruit_scd30.SCD30(i2c)
 
 # Function Definitions
 
+# Initialize the sensor
+def initialize_sensor():
+    # From Carter's Script at Adafruit, it is recommended to start with a 
+    # frequency of 50 Khz due to "Clock Stretching".
+    i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
+    scd = adafruit_scd30.SCD30(i2c)
+    return scd
+
+# Create the directories to store the saved data
+def make_file_paths():
+    file_path = Path("scd_data/raw")
+    file_path.mkdir(parents=True,exist_ok=True)
+    file_path = Path("scd_data/interpolated")
+    file_path.mkdir(exist_ok=True)
+
 # This function performs an interpolation to a time of interest
 # given two data points outside of the time of interest using
 # a linear method.
 def interpolate_linear(time_of_interest, data_set_low, data_set_high):
     given_time2 = data_set_high['seconds']
-    given_time1 = data_set_low['seconds']    
+    given_time1 = data_set_low['seconds']
+    temp_high, temp_low = data_set_high['temp'], data_set_low['temp']
+    humidity_high = data_set_high['humidity']
+    humidity_low = data_set_low['humidity']
+    co2_high,  co2_low = data_set_high['co2'], data_set_low['co2']
     # Difference between the time of two measurements
     time_difference = given_time2 - given_time1
     #First determine the slope of the path between the two times.
@@ -78,27 +94,21 @@ def interpolate_linear(time_of_interest, data_set_low, data_set_high):
     # The slope of a line where the horizontal axis is time,
     # and the vertical axis is the value to interpolate, is the
     # rate of change in the value per unit time.
-    rate_of_change_temp = \
-       (data_set_high['temp'] - data_set_low['temp']) / time_difference
-    rate_of_change_humidity = \
-      (data_set_high['humidity'] - data_set_low['humidity']) / time_difference
-    rate_of_change_co2 = \
-      (data_set_high['co2'] - data_set_low['co2']) / time_difference
+    change_rate_temp = (temp_high - temp_low) / time_difference
+    change_rate_humidity = (humidity_high - humidity_low) / time_difference
+    change_rate_c02 = (co2_high - co2_low) / time_difference
 
     # Difference between the time of interest and the fistTime
     time_difference = time_of_interest - given_time1
     # The interpolated data value is the early value plus the time difference
     # multiplied by the slope (change rate)
-    interpolated_value_temp = \
-          data_set_low['temp'] + rate_of_change_temp*time_difference
-    interpolated_value_humidity = \
-         data_set_low['humidity'] + rate_of_change_humidity*time_difference
-    interpolated_value_co2 = \
-         data_set_low['co2'] + rate_of_change_co2*time_difference
+    interpolated_temp = temp_low + change_rate_temp*time_difference
+    interpolated_humidity = humidity_low + change_rate_humidity*time_difference
+    interpolated_co2 = co2_low + change_rate_c02*time_difference
     # The interpolated value is returned out of this function.
-    return dict([('seconds', time_of_interest), ('co2', interpolated_value_co2),
-               ('temp',interpolated_value_temp),
-               ('humidity',interpolated_value_humidity)])
+    return dict(seconds=time_of_interest, co2=interpolated_co2,
+               temp=interpolated_temp,
+               humidity=interpolated_humidity)
 
 
 # Alitude, set with with scd.altitude = ALTITUDE 
@@ -118,20 +128,24 @@ def get_altitude():
     else:
         print("No altitude entered. Defaulting to 1013.25 mBar")
 
+# This function gets the data from the sensor directly and packages it
+# with the time that the sensor data was retrieved from the sensor.
 def get_interval_data(time_elapsed):
     cO2_ppm = scd.CO2
-    temperature = scd.temperature #in *C
+    temperature = scd.temperature  # in *C
     humidity = scd.relative_humidity
     interval_data = dict([('seconds', time_elapsed), ('co2', cO2_ppm),
                          ('temp',temperature), ('humidity',humidity)])
     return interval_data
 
-def sensor_loop():
-    WRITE_QTY = 30 # How many interpolated time steps are desired
-    desired_time_step = 1 # For interpolated data, in seconds
+# This function loops forever, gathering data, printing it to the screen
+# if debug mode is on, and saving raw data to one .csv file while saving
+# data interpolated at a specific time step to another .csv file.
+def sensor_loop(desired_time_step=1, debugLiveData=False,
+                                     debugInterpolatedData=False):
+    WRITE_QTY = 30  # How many interpolated time steps are desired
+    desired_time_step = 1  # For interpolated data, in seconds
     interpolated_time = 0
-    debugLiveData = True
-    debugInterpolatedData = False
     # If the sensor does not respond to 50 requests a runtime error is thrown,
     # but usually can be ignored. If it happens more than a few times over
     # the span of a few seconds, the sensor needs to be reset.
@@ -144,11 +158,11 @@ def sensor_loop():
         time_elapsed = current_time - start_time
         # Check for new data, available every 2 seconds
         try:
-            if scd.data_available: # If fresh data is available, get it
+            if scd.data_available:  # If fresh data is available, get it
                 error_count = 0
                 interval_data = get_interval_data(time_elapsed)
                 sensor_data.append(interval_data)
-                if debugLiveData: # print raw data to screen to debug sensor
+                if debugLiveData:  # print raw data to screen to debug sensor
                     print(f"Time: {interval_data['seconds']:<10.2f} "
                           f"CO2: {interval_data['co2']:>6.1f} ppm    "
                           f"T: {interval_data['temp']:<3.2f}°C    "
@@ -156,7 +170,7 @@ def sensor_loop():
         except RuntimeError as e:
             # Occasionally sensor does not want to respond
             # Ordinarily this should be I2C read error: max entries reached
-            print(e) # Print the error
+            print(e)  # Print the error
             error_count += 1
             if error_count > 10:
                 print("SENSOR FAILURE... killing program")
@@ -211,16 +225,9 @@ def sensor_loop():
             # Reset raw and interpolated data
             # Remove all the data points smaller than the interpolated time
             # Leaving the extra for the next interpolation.
-            total_vals = len(sensor_data)
-            i = total_vals - 1
-            while i >= 0 :
-                if sensor_data[i]['seconds'] < interpolated_time:
-                    sensor_data.remove(sensor_data[i])
-                i -= 1
-            # Just like in Java, this doesn't work in Python:
-            # for i, data_set in enumerate(sensor_data): # Keep some data for interpolation
-            #    if ( data_set['seconds'] < interpolated_data[-2]['seconds']):
-            #        sensor_data.remove(data_set) # Remove old data
+            for data_set in sensor_data[:]:
+                if ( data_set['seconds'] < interpolated_time):
+                    sensor_data.remove(data_set) # Remove old data
             interpolated_data.clear()
 
         # New sensor data is only available once every 2 seconds by default,
@@ -230,9 +237,8 @@ def sensor_loop():
         time.sleep(scd.measurement_interval/4)
        
 
-#Start the sensor
-os.system("mkdir scd_data")
-os.system("mkdir scd_data/raw")
-os.system("mkdir scd_data/interpolated")
+# Start the sensor script here
+scd = initialize_sensor()
+make_file_paths()
 get_altitude()
-sensor_loop()
+sensor_loop(debugInterpolatedData=True)
