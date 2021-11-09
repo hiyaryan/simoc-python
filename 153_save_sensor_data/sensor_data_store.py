@@ -62,31 +62,30 @@ import board  # For MCP-2221
 
 # Function Definitions
 
-# Initialize the sensor
 def initialize_sensor():
-    # From Carter's Script at Adafruit, it is recommended to start with a 
-    # frequency of 50 Khz due to "Clock Stretching".
+    ''' Function to initialize the sensor.
+        From Carter's Script at Adafruit, it is recommended to start with a 
+        frequency of 50 Khz due to "Clock Stretching". '''
     i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
     scd = adafruit_scd30.SCD30(i2c)
     return scd
-
-# Create the directories to store the saved data
+ 
 def make_file_paths():
-    file_path = Path("scd_data/raw")
-    file_path.mkdir(parents=True,exist_ok=True)
-    file_path = Path("scd_data/interpolated")
-    file_path.mkdir(exist_ok=True)
+    ''' Create the directories to store the saved data '''
+    Path("scd_data/raw").mkdir(parents=True,exist_ok=True)
+    Path("scd_data/interpolated").mkdir(exist_ok=True)
 
-# This function performs an interpolation to a time of interest
-# given two data points outside of the time of interest using
-# a linear method.
+
 def interpolate_linear(time_of_interest, data_set_low, data_set_high):
+    ''' # This function performs an interpolation to a time of interest
+        # given two data points outside of the time of interest using
+        # a linear method. '''
     given_time2 = data_set_high['seconds']
     given_time1 = data_set_low['seconds']
     temp_high, temp_low = data_set_high['temp'], data_set_low['temp']
     humidity_high = data_set_high['humidity']
     humidity_low = data_set_low['humidity']
-    co2_high,  co2_low = data_set_high['co2'], data_set_low['co2']
+    co2_high, co2_low = data_set_high['co2'], data_set_low['co2']
     # Difference between the time of two measurements
     time_difference = given_time2 - given_time1
     #First determine the slope of the path between the two times.
@@ -117,6 +116,7 @@ def interpolate_linear(time_of_interest, data_set_low, data_set_high):
 # Ambient Pressure, set with scd.ambient_pressure = PRESSURE_VALUE. Default
 # value is 1013.25 mBar   uint16 700 to 1400 range, 0 sets to default.
 def get_altitude():
+    ''' This function can be used to override default pressur based on altitude '''
     if len(sys.argv) > 1:
         try:
             altitude = int(sys.argv[1])
@@ -128,21 +128,29 @@ def get_altitude():
     else:
         print("No altitude entered. Defaulting to 1013.25 mBar")
 
-# This function gets the data from the sensor directly and packages it
-# with the time that the sensor data was retrieved from the sensor.
 def get_interval_data(time_elapsed):
+    ''' This function gets the data from the sensor directly and packages it
+         with the time that the sensor data was retrieved from the sensor. '''
     cO2_ppm = scd.CO2
     temperature = scd.temperature  # in *C
-    humidity = scd.relative_humidity
-    interval_data = dict([('seconds', time_elapsed), ('co2', cO2_ppm),
-                         ('temp',temperature), ('humidity',humidity)])
+    rel_humidity = scd.relative_humidity
+    interval_data = dict(seconds=time_elapsed, co2=cO2_ppm,
+                         temp=temperature, humidity=rel_humidity)
     return interval_data
 
-# This function loops forever, gathering data, printing it to the screen
-# if debug mode is on, and saving raw data to one .csv file while saving
-# data interpolated at a specific time step to another .csv file.
-def sensor_loop(desired_time_step=1, debugLiveData=False,
-                                     debugInterpolatedData=False):
+def output_to_screen(data):
+    ''' This function takes scd-30 data and prints it to the screen '''
+    print(f"Time: {data['seconds']:<10.2f} "
+          f"CO2: {data['co2']:>6.1f} ppm    "
+          f"T: {data['temp']:<3.2f}°C    "
+          f"Humidity: {data['humidity']:<3.2f}%")
+
+
+def sensor_loop(desired_time_step=1, debug_live_data=False,
+                                     debug_interpolated_data=False):
+    ''' This function loops forever, gathering data, printing it to the screen
+    if debug mode is on, and saving raw data to one .csv file while saving
+    data interpolated at a specific time step to another .csv file. '''
     WRITE_QTY = 30  # How many interpolated time steps are desired
     desired_time_step = 1  # For interpolated data, in seconds
     interpolated_time = 0
@@ -162,11 +170,8 @@ def sensor_loop(desired_time_step=1, debugLiveData=False,
                 error_count = 0
                 interval_data = get_interval_data(time_elapsed)
                 sensor_data.append(interval_data)
-                if debugLiveData:  # print raw data to screen to debug sensor
-                    print(f"Time: {interval_data['seconds']:<10.2f} "
-                          f"CO2: {interval_data['co2']:>6.1f} ppm    "
-                          f"T: {interval_data['temp']:<3.2f}°C    "
-                          f"Humidity: {interval_data['humidity']:<3.2f}%")
+                if debug_live_data:  # print raw data to screen to debug sensor
+                    output_to_screen(interval_data)
         except RuntimeError as e:
             # Occasionally sensor does not want to respond
             # Ordinarily this should be I2C read error: max entries reached
@@ -198,11 +203,9 @@ def sensor_loop(desired_time_step=1, debugLiveData=False,
                 smallest_set_without_going_under
             )
             interpolated_data.append(interpolated_set)
-            if debugInterpolatedData: # print new data to screen to debug sensor
-                print(f"Time: {interpolated_set['seconds']:<10.2f} "
-                      f"CO2: {interpolated_set['co2']:>6.1f} ppm    "
-                      f"T: {interpolated_set['temp']:<3.2f}°C    "
-                      f"Humidity: {interpolated_set['humidity']:<3.2f}%")
+            if debug_interpolated_data:
+                 # print new data to screen to debug sensor
+                output_to_screen(interpolated_set)
             interpolated_time += desired_time_step
         
         # If more than WRITE_QTY data points have been gathered, write to file
@@ -226,7 +229,7 @@ def sensor_loop(desired_time_step=1, debugLiveData=False,
             # Remove all the data points smaller than the interpolated time
             # Leaving the extra for the next interpolation.
             for data_set in sensor_data[:]:
-                if ( data_set['seconds'] < interpolated_time):
+                if data_set['seconds'] < interpolated_time:
                     sensor_data.remove(data_set) # Remove old data
             interpolated_data.clear()
 
@@ -235,10 +238,11 @@ def sensor_loop(desired_time_step=1, debugLiveData=False,
         # (or 4 times the measurement interval), to try and catch every
         # available update, even if there was a failure to reach the SCD-30.
         time.sleep(scd.measurement_interval/4)
-       
 
-# Start the sensor script here
-scd = initialize_sensor()
-make_file_paths()
-get_altitude()
-sensor_loop(debugInterpolatedData=True)
+# If called directly, start sensor loop
+if __name__ == '__main__':
+    # Start the sensor script here
+    scd = initialize_sensor()
+    make_file_paths()
+    get_altitude()
+    sensor_loop(debug_interpolated_data=True, debug_live_data=True)
