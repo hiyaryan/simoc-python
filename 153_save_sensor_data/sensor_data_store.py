@@ -63,23 +63,32 @@ import board  # For MCP-2221
 # Function Definitions
 
 def initialize_sensor():
-    ''' Function to initialize the sensor.
-        From Carter's Script at Adafruit, it is recommended to start with a 
-        frequency of 50 Khz due to "Clock Stretching". '''
+    """
+    Initialize the sensor.
+    
+    Starting with a frequency of 50 kHz is recommended
+    due to "Clock Stretching".
+    """
+    # see Carter's script at Adafruit regarding the
+    # 50 kHz recommendation
     i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
     scd = adafruit_scd30.SCD30(i2c)
     return scd
  
 def make_file_paths():
-    ''' Create the directories to store the saved data '''
+    """Create the directories to store the saved data."""
     Path("scd_data/raw").mkdir(parents=True,exist_ok=True)
     Path("scd_data/interpolated").mkdir(exist_ok=True)
 
 
 def interpolate_linear(time_of_interest, data_set_low, data_set_high):
-    ''' # This function performs an interpolation to a time of interest
-        # given two data points outside of the time of interest using
-        # a linear method. '''
+    """
+    Find the CO2, temperature, and humidity values between two data points.
+    
+    Given two data points and a time of interest between them,
+    use linear interpolation to find the values at the given time
+    and returns them in a dict.
+    """
     given_time2 = data_set_high['seconds']
     given_time1 = data_set_low['seconds']
     temp_high, temp_low = data_set_high['temp'], data_set_low['temp']
@@ -106,8 +115,8 @@ def interpolate_linear(time_of_interest, data_set_low, data_set_high):
     interpolated_co2 = co2_low + change_rate_c02*time_difference
     # The interpolated value is returned out of this function.
     return dict(seconds=time_of_interest, co2=interpolated_co2,
-               temp=interpolated_temp,
-               humidity=interpolated_humidity)
+                temp=interpolated_temp,
+                humidity=interpolated_humidity)
 
 
 # Alitude, set with with scd.altitude = ALTITUDE 
