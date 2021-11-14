@@ -17,7 +17,11 @@ def client():
 
             client_socket.sendall(keyInput.encode('utf-8'))
             if keyInput.lower() == 'quit':
-                time.sleep(5)
+                seconds = 5;
+                while seconds > 0:
+                    print(f"Quitting in {seconds}");
+                    time.sleep(1)
+                    seconds-=1;
                 break
             else:
                 data = client_socket.recv(80)
