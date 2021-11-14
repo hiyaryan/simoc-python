@@ -5,8 +5,8 @@ console front end.
 
 To run these scripts, use the shell script. 
 
-sudo chmod 777 startup.sh
-./startup.sh
+- sudo chmod 777 startup.sh
+- ./startup.sh
 
 This starts central.py, then front.py which must connect first. Then as many
 sensors as you want can be started. startup.sh starts 2 sensor scripts. 
