@@ -6,7 +6,7 @@ import time
 def client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_ip = 'localhost'
-    server_port = 8000
+    server_port = 8001
     server_address = (server_ip, server_port)
     client_socket.connect(server_address)
     print("Connection succesful!")

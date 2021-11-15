@@ -98,7 +98,7 @@ async def server():
         sensor_data = []
         try:
             tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_ip, server_port = 'localhost', 8000
+            server_ip, server_port = 'localhost', 8001
             host_address = (server_ip, server_port)  # param1 = IP, param2 = port
             tcp_socket.bind(host_address)
             tcp_socket.listen(1)
