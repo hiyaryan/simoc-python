@@ -16,10 +16,16 @@
 
 import socket 
 import asyncio 
+import json
 
 # Thread for each sensor
 async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                 sensor_data):
+    #this is the general storage format
+    sensor_json = {"sam_config": {"storages": {"air_storage": [
+        {"id": 1, "atmo_o2": 0, "atmo_co2": 0, "atmo_n2": 0, "atmo_ch4": 0, "atmo_h2": 0, "atmo_h2o": 0,
+         "total_capacity": {"value": 0, "unit": "kg"}}]}}}
+
     """Serve a sensor."""
     loop = asyncio.get_event_loop()
     try:
@@ -28,7 +34,8 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
             await loop.sock_sendall(sensor_connect, 
                 (bytes(f'Sensor {sensor_id}, send your data!',encoding='utf8')))
             data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf8')
-            print(f"Sensor {sensor_id} : {data}")
+            sensor_json["sam_config"]["storages"]["air_storage"][0]["atmo_co2"] = data
+            print(f"Sensor {sensor_id} : {json.dumps(sensor_json, indent=1)}")
             if data.lower() == 'quit':
                 print(f"{sensor_id} has left!")
                 break
