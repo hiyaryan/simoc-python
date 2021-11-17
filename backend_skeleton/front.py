@@ -6,14 +6,14 @@ import time
 def client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_ip = 'localhost'
-    server_port = 8000
+    server_port = 17400
     server_address = (server_ip, server_port)
     client_socket.connect(server_address)
     print("Backend Reached Succesfuly!")
     try:
         while True:
             print("Type 'quit' to quit.")
-            data = client_socket.recv(80)
+            data = client_socket.recv(1024)
             print(f"Central says: {data.decode('utf-8')}")
             keyInput = input("Request: ")
 
@@ -26,7 +26,7 @@ def client():
                     seconds -=1 ;
                 break
             else:
-                data = client_socket.recv(80)
+                data = client_socket.recv(1024)
                 print(f"Central says: {data.decode('utf-8')}")
     finally:
       client_socket.close()

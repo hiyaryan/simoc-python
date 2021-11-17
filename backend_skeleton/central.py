@@ -26,19 +26,16 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
         print(f"Sensor Thread Initialized for sensor: {sensor_id}")
         while True:
             await loop.sock_sendall(sensor_connect, 
-                (bytes(f'Sensor {sensor_id}, send your data!',encoding='utf8')))
-            data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf8')
+                (bytes(f'Sensor {sensor_id}, send your data!',encoding='utf-8')))
+            data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf-8')
             print(f"Sensor {sensor_id} : {data}")
-            if data.lower() == 'quit':
-                print(f"{sensor_id} has left!")
-                break
-            else:
-                # Inform sensor data was received
-                await loop.sock_sendall(sensor_connect,
-                                       (b'You sent: %s' % data.encode('utf8')))
-                # Append the sensor data
-                sensor_data.append(data)
-                print_data(sensor_data)
+ 
+            # Inform sensor data was received
+            await loop.sock_sendall(sensor_connect,
+                                   (b'You sent: %s' % data.encode('utf-8')))
+            # Append the sensor data
+            sensor_data.append(data)
+            print_data(sensor_data)
     finally:
         #Close Connection
         sensor_connect.close()
@@ -98,7 +95,7 @@ async def server():
         sensor_data = []
         try:
             tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_ip, server_port = 'localhost', 8000
+            server_ip, server_port = 'localhost', 17400
             host_address = (server_ip, server_port)  # param1 = IP, param2 = port
             tcp_socket.bind(host_address)
             tcp_socket.listen(1)

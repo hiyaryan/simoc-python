@@ -1,7 +1,6 @@
 This folder contains 3 scripts that demonstrate the general communication pattern.
 central.py is the stand-in for the main backend server, and sensor.py represents
-multiple sensors that can connect to central.py. front.py is a terminal
-console front end.
+ sensors that can connect to central.py. front.py is a terminal console front end.
 
 To run these scripts, use the shell script. 
 
@@ -9,13 +8,17 @@ To run these scripts, use the shell script.
 - ./startup.sh
 
 This starts central.py, then front.py which must connect first. Then as many
-sensors as you want can be started. startup.sh starts 2 sensor scripts. 
+sensors as you want can be started. startup.sh starts 1 sensor script for scd-30.
+You must have the SCD-30 plugged in to start it.
+
+Multiple sensors could all connect to central and central would gather all data
+from all sensors to its list.
 
 Central uses asyncio to gather data from sensors, and send it to front when front
-makes a request. In this version of the file, the sensors are not yet set up to
-gather sensor data (although we have that in another script) but you can enter
-any data into the sensor terminal, and center.py appends it to a list. When you 
-type "data" in front.py it will send that list from central.py to front.py 
-(and clear the list of unsent items from central.)
-
-
+makes a request. In this version of the file, sensor keeps sending data to Central
+as a JSON string from a live sensor. Central accumulates a list of these JSON strings.
+When you just type "data" from front, you get all of the list from Central and
+Central's list is cleared. In front it just prints to console the list in a messy
+fashion. Some next steps: Properly format JSON for ABM, use python_data_store.py
+csv saving script and incorporate into central.py these features. Also changing
+communications to socketio from socket is still necessary.
