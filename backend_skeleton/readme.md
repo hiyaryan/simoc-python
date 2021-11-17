@@ -9,10 +9,11 @@ To run these scripts, use the shell script.
 
 This starts central.py, then front.py which must connect first. Then as many
 sensors as you want can be started. startup.sh starts 1 sensor script for scd-30.
-You must have the SCD-30 plugged in to start it.
+You must have the SCD-30 plugged in to start it. It also starts a "keyboard sensor"
+simulating a second sensor.
 
 Multiple sensors could all connect to central and central would gather all data
-from all sensors to its list.
+from all sensors to its list. 
 
 Central uses asyncio to gather data from sensors, and send it to front when front
 makes a request. In this version of the file, sensor keeps sending data to Central
