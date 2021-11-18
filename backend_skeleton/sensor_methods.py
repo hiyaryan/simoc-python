@@ -221,15 +221,16 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
         if len(interpolated_data) > WRITE_QTY:
 
             column_names = ['time', 'co2','temp','humidity']
-            file_name = f"scd_data/raw/raw_data{interpolated_time}.csv"
+            file = Path('scd_data', 'raw', f'raw_data{interpolated_time}.csv')
             #Write Raw Data
-            with open(file_name, 'w', newline='') as csvfile:
+            with file.open('w', newline='') as csvfile:
                 csv_writer = csv.DictWriter(csvfile, sensor_data[0].keys())
                 csv_writer.writeheader()
                 csv_writer.writerows(sensor_data)
             # Write Interpolated Data
-            file_name = f"scd_data/interpolated/interpolated_data{interpolated_time}.csv"
-            with open(file_name, 'w', newline='') as csvfile:
+            file = Path('scd_data', 'interpolated',
+                        f'interpolated_data{interpolated_time}.csv')
+            with file.open('w', newline='') as csvfile:
                 csv_writer = csv.DictWriter(csvfile, interpolated_data[0].keys())
                 csv_writer.writeheader()
                 csv_writer.writerows(interpolated_data)

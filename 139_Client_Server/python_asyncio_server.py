@@ -8,8 +8,7 @@ async def serve(client_connect, client_address, client_id, clients):
     try:
         print(f"Serve {client_id}")
         while True:
-            await loop.sock_sendall(client_connect, 
-                                   (bytes('Write something!',encoding='utf8')))
+            await loop.sock_sendall(client_connect,b'Write something!')
             data = (await loop.sock_recv(client_connect, 80)).decode('utf8')
             print(f"Got from {client_id} : {data}")
             if data.lower() == 'quit':
@@ -17,7 +16,7 @@ async def serve(client_connect, client_address, client_id, clients):
                 break
             else:
                 await loop.sock_sendall(client_connect,
-                                        (b'You sent %s' % data.encode('utf8')))
+                                        b'You sent %s' % data.encode('utf8'))
     finally:
         #Close Connection
         client_connect.close()
@@ -26,9 +25,9 @@ async def serve(client_connect, client_address, client_id, clients):
 
 #Function to print current clients
 def print_clients(clients):
-        """Print client list and number of connections."""
-        print("Number of current Connections: ", len(clients))
-        print("List of clients: ", clients)
+    """Print client list and number of connections."""
+    print("Number of current Connections:", len(clients))
+    print("List of clients:", clients)
 
 #Function to establish a TCP host
 async def server():
@@ -40,7 +39,7 @@ async def server():
         try:
             # I have no idea what these parameters do: AF_INET, SOCK_STREAM
             tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_ip, server_port = 'localhost', 8000
+            server_ip, server_port = 'localhost', 13000
             host_address = (server_ip, server_port) #param1 = IP, param2 = port
             #The bind() function assigns the socket to the address
             tcp_socket.bind(host_address)
@@ -69,6 +68,5 @@ if __name__ == '__main__':
     except Exception as exception:
         # Pass the exemption
         print(exception)
-        pass
     finally:
         loop.close()

@@ -35,7 +35,7 @@ def server():
         print_clients(clients)
         # I have no idea what these parameters do: AF_INET, SOCK_STREAM
         tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_ip, server_port = 'localhost', 8000
+        server_ip, server_port = 'localhost', 13000
         host_address = (server_ip, server_port) #param1 = IP, param2 = port
         #The bind() function assigns the socket to the address
         tcp_socket.bind(host_address)
