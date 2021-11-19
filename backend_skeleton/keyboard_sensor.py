@@ -16,7 +16,7 @@ def keyboard_client():
 
             client_socket.sendall(keyInput.encode('utf-8'))
             client_wants_to_quit = commonio.check_for_quit(keyInput)
-            if(client_wants_to_quit):
+            if client_wants_to_quit:
                 break
             else:
                 data = client_socket.recv(80)

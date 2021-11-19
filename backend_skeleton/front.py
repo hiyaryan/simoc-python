@@ -16,8 +16,8 @@ def front_client():
             keyInput = input("Request: ")
 
             client_socket.sendall(keyInput.encode('utf-8'))
-            client_wants_to_quit = commonio.check_for_quit(keyInput)
-            if(client_wants_to_quit):
+            front_quit = commonio.check_for_quit(keyInput)
+            if front_quit:
                 break
             else:
                 data = client_socket.recv(1024).decode('utf-8')
