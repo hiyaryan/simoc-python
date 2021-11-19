@@ -22,13 +22,12 @@ import json
 # Thread for each sensor
 async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                 sensor_data):
-
-    #files used to load structure and save logs
+    # Files used to load structure and save logs
     json_format_file = 'json_format.json'
     sensor_print_file = 'simoc-livedata-init.json'
 
-    #open the format file to use it as a base
-    #TODO Meri is this good format???
+    # Open the format file to use it as a base
+    # TODO Meri is this good format???
     with open(json_format_file, ) as file:
         sensor_entry = json.load(file)
 
@@ -41,16 +40,22 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                                     (bytes(f'Sensor {sensor_id}, send your data!', encoding='utf8')))
             data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf8')
 
+            # TODO Meri turn the following into a def that handles reading and writing
             sensor_entry["sam_config"]["storages"]["air_storage"][0]["atmo_co2"] = data
             sensor_entry["total_production"]["1"]["atmo_co2"]["value"] = data
 
-            with open(sensor_print_file, ) as file:
+            # TODO Meri include error handling for when file does not exist, is empty, etc.
+            with open('simoc-livedata-init.json', ) as file:
                 sensor_json = json.load(file)
             sensor_json["entries"].append(sensor_entry)
+            # TODO Meri when the pipe is broken, an additional empty JSON is printed to file. Fix.
             with open('simoc-livedata-init.json', 'w') as file:
+                file.seek(0)
                 json.dump(sensor_json, file)
 
+            # Pretty-prints to console
             print(f"Sensor {sensor_id} : {json.dumps(sensor_entry, indent=1)}")
+
             if data.lower() == 'quit':
                 print(f"{sensor_id} has left!")
                 break
