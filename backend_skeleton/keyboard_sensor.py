@@ -1,12 +1,11 @@
-import socket
-import time
+# This script will act as a sensor to connect to central
 
-def client():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_ip = 'localhost'
-    server_port = 13000
-    server_address = (server_ip, server_port)
-    client_socket.connect(server_address)
+import time
+import socket
+import commonio
+
+def keyboard_client():
+    client_socket = commonio.set_socket()
     print("Connection succesful!")
     try:
         while True:
@@ -16,10 +15,8 @@ def client():
             keyInput = input("Response: ")
 
             client_socket.sendall(keyInput.encode('utf-8'))
-            if keyInput.lower() == 'quit':
-                for n in range(5,0,-1):
-                    print(f"Quitting in {n} seconds");
-                    time.sleep(1)
+            client_wants_to_quit = commonio.check_for_quit(keyInput)
+            if client_wants_to_quit:
                 break
             else:
                 data = client_socket.recv(80)
@@ -27,5 +24,6 @@ def client():
     finally:
       client_socket.close()
 
-#Start the client!
-client()
+#Start the fake sensor keyboard client!
+print("SENSOR (KEYBOARD)")
+keyboard_client()
