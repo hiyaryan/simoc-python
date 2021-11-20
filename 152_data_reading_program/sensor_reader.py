@@ -121,19 +121,23 @@ def sensor_loop():
         time.sleep(scd.measurement_interval / 4)
 
 
-def get_current_data():
-    """Processes input for the command get_current_data and prints current sensor readings."""
-    command = input()
-    if command.lower() == 'get_current_data':
-        print(f"CO2: {scd.CO2:>6.1f} ppm    "
-              f"T: {scd.temperature:<3.2f}°C    "
-              f"Humidity: {scd.relative_humidity:<3.2f}%")
-    else:
-        print("Expected get_current_data")
-
-
 # Start the sensor
 get_altitude()
 # sensor_loop()
 while True:
-    get_current_data()
+    print("What would you like to do? [Enter a number.]")
+    print("1. Get Current Data")
+    print("2. Continuously Read Data")
+    print("3. Quit")
+    command = input()
+
+    if command == "1":
+        print(f"CO2: {scd.CO2:>6.1f} ppm    "
+              f"T: {scd.temperature:<3.2f}°C    "
+              f"Humidity: {scd.relative_humidity:<3.2f}%")
+    elif command == "2":
+        sensor_loop()
+    elif command == "3":
+        sys.exit()
+    else:
+        continue
