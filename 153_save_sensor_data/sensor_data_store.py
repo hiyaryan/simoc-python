@@ -168,6 +168,11 @@ def co2_warn(interval_data):
     elif co2 >= 25000:
         print("Warning Level 1: Danger to Human Health.")
 
+def temp_warn(interval_data):
+    #This hasn't been researched and set in stone, so dummy values and warning are used.
+    temp = interval_data['temp']
+    if temp < 20 or temp > 26:
+        print("Temperature reaching uncomfortable levels for humans.")
 
 
 
@@ -195,6 +200,7 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
                 error_count = 0
                 interval_data = get_interval_data(time_elapsed)
                 co2_warn(interval_data)
+                temp_warn(interval_data)
                 sensor_data.append(interval_data)
                 if debug_live_data:  # print raw data to screen to debug sensor
                     output_to_screen(interval_data)
