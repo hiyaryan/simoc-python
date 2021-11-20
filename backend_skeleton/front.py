@@ -7,6 +7,7 @@ import commonio
 
 def front_client():
     client_socket = commonio.set_socket()
+
     print("Backend Reached Succesfuly!")
     try:
         while True:

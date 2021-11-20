@@ -7,6 +7,7 @@ import socket
 import commonio
 import sensor_methods
 
+
 def sensor_client(scd):
     """Run sensor client to send data from this sensor to central"""
     client_socket = commonio.set_socket()
@@ -42,7 +43,6 @@ def sensor_client(scd):
             client_socket.sendall(response)
             data = client_socket.recv(1024).decode('utf-8')
             print(f"Central says: {data}")
-
     finally:
       client_socket.close()
 

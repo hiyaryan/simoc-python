@@ -1,6 +1,6 @@
 # This script is meant to serve as the primary script for the backend.
 # It will ultimately feature 3 primary functions.
- 
+
 # The first function it serves is to gather data sent from it from multiple
 # sensors. This script acts as a server to all of these sensors which connect
 # to it and send it sensor data.
@@ -14,12 +14,40 @@
 # This version of the script does not include all of these features. The present
 # version establishes connection to a front-end and sends "data" upon request.
 
-import socket 
-import asyncio 
+import socket
+import asyncio
+import json
+
+def JSONize(data):
+    # Files used to load structure and save logs
+    json_format_file = 'json_format.json'
+    sensor_print_file = 'simoc-livedata-init.json'
+
+    # Open the format file to use it as a base
+    # TODO Meri is this good format???
+    with open(json_format_file, ) as file:
+        sensor_entry = json.load(file)
+    # TODO Meri turn the following into a def that handles reading and writing
+    # sensor_entry["sam_config"]["storages"]["air_storage"][0]["atmo_co2"] = data
+    sensor_entry["total_production"]["1"]["atmo_co2"]["value"] = data
+
+    # TODO Meri include error handling for when file does not exist, is empty, etc.
+    with open('simoc-livedata-init.json', ) as file:
+        sensor_json = json.load(file)
+    sensor_json["entries"].append(sensor_entry)
+    # TODO Meri when the pipe is broken, an additional empty JSON is printed to file. Fix.
+    with open('simoc-livedata-init.json', 'w') as file:
+        file.seek(0)
+        json.dump(sensor_json, file)
+    # Pretty-prints to console
+    print(f"Sensor JSON Written : {json.dumps(sensor_entry, indent=1)}")
+    return sensor_json
+
 
 # Thread for each sensor
 async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                 sensor_data):
+
     """Serve a sensor."""
     loop = asyncio.get_event_loop()
     try:
@@ -27,20 +55,32 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
         while True:
             await loop.sock_sendall(sensor_connect, 
                                     b'Sensor %d, send your data!' % sensor_id)
-            data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf-8')
-            print(f"Sensor {sensor_id} : {data}")
- 
-            # Inform sensor data was received
-            await loop.sock_sendall(sensor_connect,
-                                    b'You sent: %s' % data.encode('utf-8'))
-            # Append the sensor data
-            sensor_data.append(data)
-            print_data(sensor_data)
+            data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf8')
+            print(f"Sensor Original {sensor_id} : {data}")
+
+            if data.lower() == 'quit':
+                print(f"{sensor_id} has left!")
+                break
+            else:
+
+                # Inform sensor data was received
+                await loop.sock_sendall(sensor_connect,
+                                        b'You sent: %s' % data.encode('utf-8'))
+                # Pull the JSON out of the sent package
+                JSON_split = json.loads(data)
+                # Save file to JSON
+                json_co2 = JSONize(JSON_split["co2"])
+                #To do: PACKAGE TEMP, HUMIDITY, ETC. ALSO
+                # Append the sensor data
+                sensor_data.append(json_co2)
+                print_data(sensor_data)
+
     finally:
-        #Close Connection
+        # Close Connection
         sensor_connect.close()
         attached_sensors.remove(sensor_id)
         print_sensors(attached_sensors)
+
 
 # Thread for front
 async def serve_front(front_connect, front_address, sensor_data):
@@ -55,11 +95,13 @@ async def serve_front(front_connect, front_address, sensor_data):
             if request.lower() == 'data':
               await loop.sock_sendall(front_connect,
                                      f'Your Data: {sensor_data}'.encode('utf8'))
+
             elif request.lower() == 'quit':
                 print(f"FRONT has disconnected!")
                 break
             else:
                  await loop.sock_sendall(front_connect, b'Unknown Command')
+
             # Clear sensor data ( We probably need to save this to database 1st)
             sensor_data.clear()
             print_data(sensor_data)
@@ -71,19 +113,21 @@ async def serve_front(front_connect, front_address, sensor_data):
         # Front disconnects.
 
 
-#Function to print current sensors
+# Function to print current sensors
 def print_data(sensor_data):
     """Print connected sensor list."""
     print("Number of unsent data elements:", len(sensor_data))
     print("contents:", sensor_data)
 
-#Function to print current sensors
+# Function to print current sensors
 def print_sensors(attached_sensors):
     """Print connected sensor list."""
+
     print("Number of sensors:", len(attached_sensors))
     print("List of sensor ID:", attached_sensors)
 
-#Function to establish a TCP host
+
+# Function to establish a TCP host
 async def server():
     """Connect to sensors and front"""
     loop = asyncio.get_event_loop()
@@ -101,7 +145,8 @@ async def server():
         print(f"Waiting for front on {server_ip} port {server_port}")
         front_connect, front_address = await loop.sock_accept(tcp_socket)
         front_details = front_connect, front_address, sensor_data
-        #Start a asyncio for a sensor sending data to the system
+
+        # Start a asyncio for a sensor sending data to the system
         loop.create_task(serve_front(*front_details))
         # Next, await connection to sensors
         while True:
@@ -114,10 +159,12 @@ async def server():
                               attached_sensors, sensor_data)
             print(f"Sensor connected from {sensor_address}!")
             #Start a asyncio for a sensor sending data to the system
+
             loop.create_task(sense(*sensor_details))
             attached_sensors.append(sensor_id)
     finally:
         tcp_socket.close()
+
 
 if __name__ == '__main__':
     try:
