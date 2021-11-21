@@ -14,6 +14,7 @@
 
 # Normal Packages
 import os
+os.environ['BLINKA_MCP2221'] = '1'
 import sys
 import time
 # Special packages
@@ -24,13 +25,6 @@ except RuntimeError:
     sys.exit()
     
 import adafruit_scd30
-
-# export statment is required to import board
-# Set the export statment command with a system call
-# in case it is not already set.
-# If this system call is not made, import board will fail
-# This system call sometimes works on my computer but usually fails
-os.system("export BLINKA_MCP2221=1")
 
 if 'BLINKA_MCP2221' not in os.environ:
     print(f'Before running this program, type "export BLINKA_MCP2221=1"'

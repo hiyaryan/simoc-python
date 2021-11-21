@@ -22,4 +22,4 @@ When you just type "data" from front, you get all of the list from Central and
 Central's list is cleared. In front it just prints to console the list in a messy
 fashion. Some next steps: Properly format JSON for ABM, use python_data_store.py
 csv saving script and incorporate into central.py these features. Also changing
-communications to socketio from socket is still necessary.
+communications to socketio from socket may be necessary.
