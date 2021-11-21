@@ -155,6 +155,27 @@ def output_to_screen(data):
           f"Humidity: {data['humidity']:<3.2f}%")
 
 
+def co2_warn(interval_data):
+    co2 = interval_data['co2']
+    #Ideally at this point we could also check whether or not the sensor is for humans or for plants
+    #Regardless, I will lump it all together.
+    if co2 < 200:
+        print("Warning Level 1: Danger to Plant Health.")
+    elif 1000 <= co2 < 5000:
+        print("Warning Level 3: Uncomfortable for Humans/ May be suboptimal for plant growth.")
+    elif 5000 <= co2 < 25000:
+        print("Warning Level 2: Not suitable to humans or plants for an extended time.")
+    elif co2 >= 25000:
+        print("Warning Level 1: Danger to Human Health.")
+
+def temp_warn(interval_data):
+    #This hasn't been researched and set in stone, so dummy values and warning are used.
+    temp = interval_data['temp']
+    if temp < 20 or temp > 26:
+        print("Temperature reaching uncomfortable levels for humans.")
+
+
+
 def sensor_loop(desired_time_step=1, debug_live_data=False,
                                      debug_interpolated_data=False):
     ''' This function loops forever, gathering data, printing it to the screen
@@ -178,6 +199,8 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
             if scd.data_available:  # If fresh data is available, get it
                 error_count = 0
                 interval_data = get_interval_data(time_elapsed)
+                co2_warn(interval_data)
+                temp_warn(interval_data)
                 sensor_data.append(interval_data)
                 if debug_live_data:  # print raw data to screen to debug sensor
                     output_to_screen(interval_data)

@@ -16,13 +16,16 @@
 import os
 import sys
 import time
+
+os.environ['BLINKA_MCP2221'] = '1'
+
 # Special packages
 try:
     import busio
 except RuntimeError:
     print("Script failed during busio import. Probably the sensor is not plugged in.")
     sys.exit()
-    
+
 import adafruit_scd30
 
 # export statment is required to import board
@@ -30,14 +33,14 @@ import adafruit_scd30
 # in case it is not already set.
 # If this system call is not made, import board will fail
 # This system call sometimes works on my computer but usually fails
-os.system("export BLINKA_MCP2221=1")
+
 
 if 'BLINKA_MCP2221' not in os.environ:
     print(f'Before running this program, type "export BLINKA_MCP2221=1"'
           f'in the same terminal window.')
     sys.exit()
 
-import board # For MCP-2221
+import board  # For MCP-2221
 
 # Variables to enhance precision of sensor
 
@@ -57,6 +60,7 @@ import board # For MCP-2221
 # of 50 Khz due to "Clock Stretching".
 i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
 scd = adafruit_scd30.SCD30(i2c)
+
 
 # The scd.reset() method is known to cause issues with the MCP-2221
 # A script written by Adafruit offered an alternative reset method
@@ -87,6 +91,7 @@ def get_altitude():
     else:
         print("No altitude entered. Defaulting to 1013.25 mBar")
 
+
 def sensor_loop():
     # If the sensor does not respond to 50 requests a runtime error is thrown,
     # but usually can be ignored. If it happens more than a few times over
@@ -107,16 +112,34 @@ def sensor_loop():
         except RuntimeError as e:
             # Occasionally sensor does not want to respond
             # Ordinarily this should be I2C read error: max entries reached
-            print(e) # Print the error
+            print(e)  # Print the error
             error_count += 1
             if error_count > 10:
                 print("SENSOR FAILURE... killing program")
-                sys.exit() # Kill the program because something bad is happening
+                sys.exit()  # Kill the program because something bad is happening
         # New sensor data is only available once every 2 seconds by default, but here we
         # poll every 0.5 seconds by default, (or 4 times the measurement interval), to try
         # and catch every available update, even if there was a failure to reach the SCD-30.
-        time.sleep(scd.measurement_interval/4)
+        time.sleep(scd.measurement_interval / 4)
 
-#Start the sensor
+
+# Start the sensor
 get_altitude()
-sensor_loop()
+# sensor_loop()
+while True:
+    print("What would you like to do? [Enter a number.]")
+    print("1. Get Current Data")
+    print("2. Continuously Read Data")
+    print("3. Quit")
+    command = input()
+
+    if command == "1":
+        print(f"CO2: {scd.CO2:>6.1f} ppm    "
+              f"T: {scd.temperature:<3.2f}°C    "
+              f"Humidity: {scd.relative_humidity:<3.2f}%")
+    elif command == "2":
+        sensor_loop()
+    elif command == "3":
+        sys.exit()
+    else:
+        continue
