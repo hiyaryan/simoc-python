@@ -17,6 +17,8 @@ import os
 import sys
 import time
 
+os.environ['BLINKA_MCP2221'] = '1'
+
 # Special packages
 try:
     import busio
@@ -31,7 +33,7 @@ import adafruit_scd30
 # in case it is not already set.
 # If this system call is not made, import board will fail
 # This system call sometimes works on my computer but usually fails
-os.system("export BLINKA_MCP2221=1")
+
 
 if 'BLINKA_MCP2221' not in os.environ:
     print(f'Before running this program, type "export BLINKA_MCP2221=1"'
