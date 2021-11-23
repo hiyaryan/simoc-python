@@ -19,3 +19,39 @@ type "data" in front.py it will send that list from central.py to front.py
 (and clear the list of unsent items from central.)
 
 
+The Central.py script also prints input to simoc-livedata-init.json in the following format. New entries are added to "total_production" with a +1 key
+{
+	"sam_config": {
+		"storages": {
+			"air_storage":[
+				{
+					"id":1,
+					"atmo_o2":0,
+					"atmo_co2":0,
+					"atmo_n2":0,
+					"atmo_ch4":0,
+					"atmo_h2":0,
+					"atmo_h2o":0,
+		 			"total_capacity":{
+		 				"value":0,
+		 				"unit":"kg"
+		 			}
+		 		}
+		 	]
+		 }
+	},
+	"parameters": {
+	},
+	"total_production": {
+		"1":{
+			"atmo_co2":{
+				"value":0,
+				"unit":"kg"
+			}
+		}
+	}
+}
+
+
+
+
