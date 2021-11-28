@@ -1,36 +1,55 @@
 # This script will act as a sensor to connect to central
 
-import socket
+import sys
 import time
+import json
+import socket
+import commonio
+import sensor_methods
 
-def client():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_ip = 'localhost'
-    server_port = 8001
-    server_address = (server_ip, server_port)
-    client_socket.connect(server_address)
-    print("Connection succesful!")
+
+def sensor_client(scd):
+    """Run sensor client to send data from this sensor to central"""
+    client_socket = commonio.set_socket()
+    start_time = time.time()
+    error_count = 0
+    print("Connection to Central succesful!")
     try:
         while True:
-            print("Type 'quit' to quit.")
-            data = client_socket.recv(80)
-            print(f"Server says: {data.decode('utf-8')}")
-            keyInput = input("Response: ")
-
-            client_socket.sendall(keyInput.encode('utf-8'))
-            if keyInput.lower() == 'quit':
-                seconds = 5;
-                while seconds > 0:
-                    print(f"Quitting in {seconds}");
-                    time.sleep(1)
-                    seconds-=1;
-                break
-            else:
-                data = client_socket.recv(80)
-                print(f"Server says: {data.decode('utf-8')}")
+            success = True
+            current_time = time.time()
+            time_elapsed = current_time - start_time
+            print("Getting Central's message...")
+            data = client_socket.recv(80).decode('utf-8')
+            print(f"Central says: {data}")
+            response = "No Data Recorded"
+            # Get some sensor message to send
+            try:
+                updated = False
+                while not updated:
+                    time.sleep(scd.measurement_interval/4)
+                    if scd.data_available:  # If fresh data is available, get it
+                        error_count = 0
+                        response = sensor_methods.get_interval_data(scd,time_elapsed)
+                        response = json.dumps(response)
+                        updated = True
+            except RuntimeError as e:
+                print(e)
+                error_count += 1
+                if error_count > 10:
+                    print("SENSOR FAILURE... killing program")
+                    sys.exit() # Kill the program because something bad is happening
+            response = response.encode('utf-8')
+            client_socket.sendall(response)
+            data = client_socket.recv(1024).decode('utf-8')
+            print(f"Central says: {data}")
     finally:
       client_socket.close()
 
-#Start the client!
-print("SENSOR")
-client()
+if __name__ == '__main__':
+    #Start the client!
+    print("SENSOR")
+    scd = sensor_methods.initialize_sensor()
+    sensor_methods.get_altitude(scd)
+    sensor_client(scd)
+

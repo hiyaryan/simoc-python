@@ -11,9 +11,9 @@ import called_script
 # Prints the number again.
 # Due to asyncio, the shorter numbers will print twice first even if called
 # second.
-async def randonNumberWait():
+async def random_number_wait():
     """Generate a random number and delay it that long in seconds."""
-    number = random.randint(1,9);
+    number = random.randint(1, 9)
     print(f"{number} will print again in {number} seconds...")
     await asyncio.sleep(number)
     print(f"{number} is done.")
@@ -24,10 +24,10 @@ async def randonNumberWait():
 async def main():
     """Generate 2 numbers asynchronously with wait.""" 
     print("Entering the main loop")
-    numberA = loop.create_task(randonNumberWait())
-    numberB = (loop.create_task(randonNumberWait()))
+    numberA = loop.create_task(random_number_wait())
+    numberB = loop.create_task(random_number_wait())
     # This will return the two integers
-    await asyncio.wait([numberA,numberB])
+    await asyncio.wait([numberA, numberB])
     print(f"{numberA.result()} and {numberB.result()} finished.")
 
 # Main method that only appears if this script is called in the absence of
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         loop.run_until_complete(main())
 
     except Exception as exception:
-        # Pass the exemption
+        # Pass the exception
         pass
     finally:
         # Async loop terminates

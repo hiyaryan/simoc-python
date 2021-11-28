@@ -118,8 +118,8 @@ def interpolate_linear(time_of_interest, data_set_low, data_set_high):
 # Seting altitude is disregarded when ambient pressure is given to the system.
 # Ambient Pressure, set with scd.ambient_pressure = PRESSURE_VALUE. Default
 # value is 1013.25 mBar   uint16 700 to 1400 range, 0 sets to default.
-def get_altitude():
-    ''' This function can be used to override default pressur based on altitude '''
+def get_altitude(scd):
+    ''' This function can be used to override default pressure based on altitude '''
     if len(sys.argv) > 1:
         try:
             altitude = int(sys.argv[1])
@@ -131,7 +131,7 @@ def get_altitude():
     else:
         print("No altitude entered. Defaulting to 1013.25 mBar")
 
-def get_interval_data(time_elapsed):
+def get_interval_data(scd, time_elapsed):
     ''' This function gets the data from the sensor directly and packages it
          with the time that the sensor data was retrieved from the sensor. '''
     cO2_ppm = scd.CO2
@@ -148,7 +148,7 @@ def output_to_screen(data):
           f"T: {data['temp']:<3.2f}°C    "
           f"Humidity: {data['humidity']:<3.2f}%")
 
-
+# This method is only if this script is called on its own.
 def sensor_loop(desired_time_step=1, debug_live_data=False,
                                      debug_interpolated_data=False):
     ''' This function loops forever, gathering data, printing it to the screen
@@ -171,7 +171,7 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
         try:
             if scd.data_available:  # If fresh data is available, get it
                 error_count = 0
-                interval_data = get_interval_data(time_elapsed)
+                interval_data = get_interval_data(scd, time_elapsed)
                 sensor_data.append(interval_data)
                 if debug_live_data:  # print raw data to screen to debug sensor
                     output_to_screen(interval_data)
@@ -215,15 +215,16 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
         if len(interpolated_data) > WRITE_QTY:
 
             column_names = ['time', 'co2','temp','humidity']
-            file_name = f"scd_data/raw/raw_data{interpolated_time}.csv"
+            file = Path('scd_data', 'raw', f'raw_data{interpolated_time}.csv')
             #Write Raw Data
-            with open(file_name, 'w', newline='') as csvfile:
+            with file.open('w', newline='') as csvfile:
                 csv_writer = csv.DictWriter(csvfile, sensor_data[0].keys())
                 csv_writer.writeheader()
                 csv_writer.writerows(sensor_data)
             # Write Interpolated Data
-            file_name = f"scd_data/interpolated/interpolated_data{interpolated_time}.csv"
-            with open(file_name, 'w', newline='') as csvfile:
+            file = Path('scd_data', 'interpolated',
+                        f'interpolated_data{interpolated_time}.csv')
+            with file.open('w', newline='') as csvfile:
                 csv_writer = csv.DictWriter(csvfile, interpolated_data[0].keys())
                 csv_writer.writeheader()
                 csv_writer.writerows(interpolated_data)
@@ -247,5 +248,5 @@ if __name__ == '__main__':
     # Start the sensor script here
     scd = initialize_sensor()
     make_file_paths()
-    get_altitude()
+    get_altitude(scd)
     sensor_loop(debug_interpolated_data=True, debug_live_data=True)
