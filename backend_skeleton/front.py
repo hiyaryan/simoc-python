@@ -9,7 +9,7 @@ def client():
     server_port = 8001
     server_address = (server_ip, server_port)
     client_socket.connect(server_address)
-    print("Backend Reached Succesfuly!")
+    print("Backend Reached Successfully!")
     try:
         while True:
             print("Type 'quit' to quit.")

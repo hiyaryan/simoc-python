@@ -45,7 +45,7 @@ The Central.py script also prints input to simoc-livedata-init.json in the follo
 	"total_production": {
 		"1":{
 			"atmo_co2":{
-				"value":0,
+				"value": null,
 				"unit":"kg"
 			}
 		}

@@ -17,16 +17,12 @@
 import socket
 import asyncio
 import json
+from jsonschema import validate
 
 
 # Thread for each sensor
 async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                 sensor_data):
-    # Files used to load structure and save logs
-    json_format_file = 'json_format.json'
-    sensor_print_file = 'simoc-livedata-init.json'
-    init = False
-
     """Serve a sensor."""
     loop = asyncio.get_event_loop()
     try:
@@ -36,28 +32,7 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                                     (bytes(f'Sensor {sensor_id}, send your data!', encoding='utf8')))
             data = (await loop.sock_recv(sensor_connect, 1024)).decode('utf8')
 
-            # # TODO Meri include error handling for when file does not exist, is empty, etc.
-            with open(sensor_print_file, ) as file:
-                sensor_json = json.load(file)
-
-            total_production_size = len(sensor_json["total_production"])
-
-            if not init:
-                sensor_json["total_production"]["1"]["atmo_co2"]["value"] = data
-                init = True
-            else:
-                production_obj = sensor_json["total_production"]["1"]
-                production_obj["atmo_co2"]["value"] = data
-                sensor_json["total_production"].update({str(total_production_size+1) : production_obj})
-
-            # TODO Meri when the pipe is broken, an additional empty JSON is printed to file. Fix.
-            # TODO Meri can we seek to the end of the file instead of re-writing it each time?
-            with open(sensor_print_file, 'w') as file:
-                file.seek(0)
-                json.dump(sensor_json, file)
-
-            # Pretty-prints to console
-            print(f"Sensor {sensor_id} : {json.dumps(sensor_json, indent=1)}")
+            handle_json(data, sensor_id)
 
             if data.lower() == 'quit':
                 print(f"{sensor_id} has left!")
@@ -159,6 +134,41 @@ async def server():
         tcp_socket.close()
 
 
+def handle_json(data, sensor_id):
+    # File used to load structure and save logs
+    sensor_print_file = 'simoc-livedata-init.json'
+    init = None
+
+    # TODO Meri include error handling for when file does not exist, is empty, etc.
+    with open(sensor_print_file, ) as file:
+        sensor_json = json.loads(file.read())
+
+    # TODO Meri include schema validation as part of error handling
+    # sensor_schema =
+    # try:
+    #     validate(instance=sensor_json, schema=sensor_schema)
+    # except:
+
+    total_production_size = len(sensor_json["total_production"])
+
+    if sensor_json["total_production"]["1"]["atmo_co2"]["value"] is not None:
+        production_obj = sensor_json["total_production"]["1"]
+        production_obj["atmo_co2"]["value"] = data
+        sensor_json["total_production"].update({str(total_production_size + 1): production_obj})
+    else:
+        sensor_json["total_production"]["1"]["atmo_co2"]["value"] = data
+
+
+    # TODO Meri when the pipe is broken, an additional empty JSON is printed to file. Fix.
+    # TODO Meri can we seek to the end of the file instead of re-writing it each time?
+    with open(sensor_print_file, 'w') as file:
+        file.seek(0)
+        json.dump(sensor_json, file)
+
+    # Pretty-prints to console
+    print(f"Sensor {sensor_id} : {json.dumps(sensor_json, indent=1)}")
+
+
 if __name__ == '__main__':
     try:
         print("CENTRAL")
@@ -166,7 +176,7 @@ if __name__ == '__main__':
         asyncio.ensure_future(server())
         loop.run_forever()
     except Exception as exception:
-        # Pass the exemption
+        # Pass the exception
         print(exception)
         pass
     finally:
