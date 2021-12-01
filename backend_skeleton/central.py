@@ -31,7 +31,7 @@ def JSONize(data):
     # step_data.json has the correct format for 1 array entry
     json_format_file = 'step_data.json'
     # Every interval, a new file must be created
-    sensor_print_file = Path('res',f'step_data_{JSONize.file_number}.json')
+    sensor_print_file = Path('simoc_server','res',f'step_data_{JSONize.file_number}.json')
     init = False
     
     if len(data) != save_interval:
