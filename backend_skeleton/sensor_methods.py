@@ -11,6 +11,8 @@ os.environ['BLINKA_MCP2221'] = '1'
 import sys
 import csv
 import time
+import interpolation
+import commonio
 from pathlib import Path
 # Special packages
 try:
@@ -74,45 +76,6 @@ def make_file_paths():
     Path("scd_data/raw").mkdir(parents=True,exist_ok=True)
     Path("scd_data/interpolated").mkdir(exist_ok=True)
 
-
-def interpolate_linear(time_of_interest, data_set_low, data_set_high):
-    """
-    Find the CO2, temperature, and humidity values between two data points.
-    
-    Given two data points and a time of interest between them,
-    use linear interpolation to find the values at the given time
-    and returns them in a dict.
-    """
-    given_time2 = data_set_high['seconds']
-    given_time1 = data_set_low['seconds']
-    temp_high, temp_low = data_set_high['temp'], data_set_low['temp']
-    humidity_high = data_set_high['humidity']
-    humidity_low = data_set_low['humidity']
-    co2_high, co2_low = data_set_high['co2'], data_set_low['co2']
-    # Difference between the time of two measurements
-    time_difference = given_time2 - given_time1
-    #First determine the slope of the path between the two times.
-    # This is the slope of the line known as a linear interpolant.
-    # The slope of a line where the horizontal axis is time,
-    # and the vertical axis is the value to interpolate, is the
-    # rate of change in the value per unit time.
-    change_rate_temp = (temp_high - temp_low) / time_difference
-    change_rate_humidity = (humidity_high - humidity_low) / time_difference
-    change_rate_c02 = (co2_high - co2_low) / time_difference
-
-    # Difference between the time of interest and the fistTime
-    time_difference = time_of_interest - given_time1
-    # The interpolated data value is the early value plus the time difference
-    # multiplied by the slope (change rate)
-    interpolated_temp = temp_low + change_rate_temp*time_difference
-    interpolated_humidity = humidity_low + change_rate_humidity*time_difference
-    interpolated_co2 = co2_low + change_rate_c02*time_difference
-    # The interpolated value is returned out of this function.
-    return dict(seconds=time_of_interest, co2=interpolated_co2,
-                temp=interpolated_temp,
-                humidity=interpolated_humidity)
-
-
 # Alitude, set with with scd.altitude = ALTITUDE 
 # (uint16, height above sea level in meters)
 # Seting altitude is disregarded when ambient pressure is given to the system.
@@ -174,7 +137,7 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
                 interval_data = get_interval_data(scd, time_elapsed)
                 sensor_data.append(interval_data)
                 if debug_live_data:  # print raw data to screen to debug sensor
-                    output_to_screen(interval_data)
+                    commonio.output_to_screen(interval_data)
         except RuntimeError as e:
             # Occasionally sensor does not want to respond
             # Ordinarily this should be I2C read error: max entries reached
@@ -198,7 +161,7 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
             largest_set_without_going_over = sensor_data[-(index + 1)]
             # Interpolate to find the new value
             new_time = interpolated_time + desired_time_step
-            interpolated_set = interpolate_linear(
+            interpolated_set = interpolation.linear(
                 new_time,
                 # Time and values of the largest pair
                 largest_set_without_going_over,
@@ -208,7 +171,7 @@ def sensor_loop(desired_time_step=1, debug_live_data=False,
             interpolated_data.append(interpolated_set)
             if debug_interpolated_data:
                  # print new data to screen to debug sensor
-                output_to_screen(interpolated_set)
+                commonio.output_to_screen(interpolated_set)
             interpolated_time += desired_time_step
         
         # If more than WRITE_QTY data points have been gathered, write to file
