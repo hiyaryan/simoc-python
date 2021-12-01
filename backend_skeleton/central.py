@@ -22,48 +22,78 @@ import commonio
 import interpolation
 from pathlib import Path
 
+
 def JSONize(data):
+    ''' Convert array of data to proper JSON format '''
     # Files used to load structure and save logs
+    save_interval = 24
+    step_number = save_interval*JSONize.file_number - save_interval + 1
+    # step_data.json has the correct format for 1 array entry
     json_format_file = 'step_data.json'
-    sensor_print_file = 'step_data_append.json'
+    # Every interval, a new file must be created
+    sensor_print_file = Path('res',f'step_data_{JSONize.file_number}.json')
     init = False
     
+    if len(data) != save_interval:
+        print(f"ERROR: DATA ({len(data)} DOES NOT MATCH SAVE INTERVAL {save_interval}!")
     #DEBUG 
     print("Data in JSONize:", data)
-    # TODO Meri include error handling for when file does not exist, is empty, etc.
-    try:
-        with open(sensor_print_file, ) as file:
-            sensor_json = json.load(file)
+    
+    # Load the format file to save from
+    with open(json_format_file, ) as file:
+        sensor_json = json.load(file)
 
-        existing_steps = len(sensor_json)
-        init = True
-    except Exception as FileException:
-        print(FileException)
-        print("File not init!")
+    # Append to the array a duplicate such that there are 24.
+        for i in range (0,24):
+            # Open base json format file
+            with open(json_format_file, ) as file:
+                next_json=json.load(file)
+            # See if there is production or consumption of co2
+            if i > 0:  # TO DO: This should look at data from the last file!
+                co2_diff = data[i]["co2"] - data[i-1]["co2"]
+                if co2_diff > 0:
+                    co2_production = co2_diff
+                    co2_consumption = 0
+                else:
+                    co2_production = 0
+                    co2_consumption = -co2_diff
+            else:
+                co2_production = 0
+                co2_consumption = 0                    
+            this_step = i+step_number
+            # Set the value for humidity and co2
+            next_json[0]["step_num"]=this_step
+            next_json[0]["storage_capacities"]["air_storage"]["1"]["atmo_co2"]["value"]=data[i]["co2"]
+            next_json[0]["storage_capacities"]["air_storage"]["1"]["atmo_h2o"]["value"]=data[i]['humidity']
+            next_json[0]["total_production"]["atmo_co2"]["value"]=co2_production
+            next_json[0]["total_consumption"]["atmo_co2"]["value"]=co2_consumption
+            # Set the dictionary keys to be correct for each entry
+            small_object = {str(this_step):0}
+            small_object[str(this_step)] = next_json[0]["storage_capacities"]["air_storage"].pop("1")
+            next_json[0]["storage_capacities"]["air_storage"]=small_object;
+            small_object = {str(this_step):0}
+            small_object[str(this_step)] = next_json[0]["storage_capacities"]["water_storage"].pop("1")
+            next_json[0]["storage_capacities"]["water_storage"]=small_object;
+            small_object = {str(this_step):0}
+            small_object[str(this_step)] = next_json[0]["storage_capacities"]["nutrient_storage"].pop("1")
+            next_json[0]["storage_capacities"]["nutrient_storage"]=small_object;
+            small_object = {str(this_step):0}
+            small_object[str(this_step)] = next_json[0]["storage_capacities"]["power_storage"].pop("1")
+            next_json[0]["storage_capacities"]["power_storage"]=small_object;
+            small_object = {str(this_step):0}
+            small_object[str(this_step)] = next_json[0]["storage_capacities"]["food_storage"].pop("1")
+            next_json[0]["storage_capacities"]["food_storage"]=small_object;
+            sensor_json.append(next_json[0])
 
-    # If it is not initailized, start from an empty file
-    if not init:
-        with open(json_format_file, ) as file:
-            sensor_json = json.load(file)
-        sensor_json[0]["storage_capacities"]["air_storage"]["1"]["atmo_co2"]["value"] = data
-        existing_steps = 1
-        current_step = 1
-        init = True
-    else:
-        current_step = existing_steps + 1
-        production_obj = sensor_json[current_step-1]["storage_capacities"]["air_storage"][{str(current_step)}]
-        production_obj["atmo_co2"]["value"] = data
-        sensor_json[current_step-1]["step_num"] = current_step
-        sensor_json[current_step-1]["storage_capacities"]["air_storage"].update({str(current_step) : production_obj})
-
-    # TODO Meri when the pipe is broken, an additional empty JSON is printed to file. Fix.
-    # TODO Meri can we seek to the end of the file instead of re-writing it each time?
+    # Eliminate the first entry in the list which was the file that was loaded
+    sensor_json.pop(0);
     with open(sensor_print_file, 'w') as file:
         file.seek(0)
         json.dump(sensor_json, file)
-
+    
+    JSONize.file_number += 1 # Increment the function satic variable
     return sensor_json
-
+JSONize.file_number = 1 # initialize the function static variable
 
 # Thread for each sensor
 async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
@@ -98,6 +128,7 @@ async def sense(sensor_connect, sensor_address, sensor_id, attached_sensors,
                 # Append the sensor data
                 sensor_data.append(JSON_split)
                 # print_data(sensor_data)
+                await asyncio.sleep(0.5)
 
     finally:
         # Close Connection
@@ -173,17 +204,18 @@ async def process_data(attached_sensors, sensor_data):
 
     while True:
         # Check if there is data to interpolate
+        sensor_data_copy = sensor_data[:]
         while (len(sensor_data) > 1 and
-           sensor_data[-1]['seconds'] > interpolated_time + desired_time_step):
+           sensor_data_copy[-1]['seconds'] > interpolated_time + desired_time_step):
             # Get the smallest pair without going under
-            for index, data_set in enumerate(reversed(sensor_data)):
+            for index, data_set in enumerate(reversed(sensor_data_copy)):
                 if data_set['seconds'] > interpolated_time + desired_time_step:
                     smallest_set_without_going_under = data_set
                 if data_set['seconds'] < interpolated_time + desired_time_step:
                     break
 
             #Get the largest pair without going over
-            largest_set_without_going_over = sensor_data[-(index + 1)]
+            largest_set_without_going_over = sensor_data_copy[-(index + 1)]
             # Interpolate to find the new value
             new_time = interpolated_time + desired_time_step
             interpolated_set = interpolation.linear(
@@ -199,23 +231,24 @@ async def process_data(attached_sensors, sensor_data):
                 commonio.output_to_screen(interpolated_set)
             interpolated_time += desired_time_step
         
-    # If more than WRITE_QTY data points have been gathered, write to file
+        # If more than WRITE_QTY data points have been gathered, write to file
         if len(interpolated_data) > WRITE_QTY:
-            write_raw_data_csv(sensor_data, interpolated_time)
+            write_raw_data_csv(sensor_data_copy, interpolated_time)
             
             # Write Interpolated Data to JSON
-            # JSONize(sensor_data)
+            JSONize(interpolated_data[0:24])
 
             # Reset raw and interpolated data
             # Remove all the data points smaller than the interpolated time
             # Leaving the extra for the next interpolation.
-            for data_set in sensor_data[:]:
+            for data_set in sensor_data_copy:
                 if data_set['seconds'] < interpolated_time:
                     sensor_data.remove(data_set) # Remove old data
-            interpolated_data.clear()
+            for i in range (0,24):
+                interpolated_data.pop(0)
 
         await asyncio.sleep(1);
-        print("Waiting for data...")
+        print("Waiting for data...", len(sensor_data))
 # Function to establish a TCP host
 async def server():
     """Connect to sensors and front"""
