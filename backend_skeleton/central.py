@@ -67,22 +67,7 @@ def JSONize(data):
             next_json[0]["storage_capacities"]["air_storage"]["1"]["atmo_h2o"]["value"]=data[i]['humidity']
             next_json[0]["total_production"]["atmo_co2"]["value"]=co2_production
             next_json[0]["total_consumption"]["atmo_co2"]["value"]=co2_consumption
-            # Set the dictionary keys to be correct for each entry
-            small_object = {str(this_step):0}
-            small_object[str(this_step)] = next_json[0]["storage_capacities"]["air_storage"].pop("1")
-            next_json[0]["storage_capacities"]["air_storage"]=small_object;
-            small_object = {str(this_step):0}
-            small_object[str(this_step)] = next_json[0]["storage_capacities"]["water_storage"].pop("1")
-            next_json[0]["storage_capacities"]["water_storage"]=small_object;
-            small_object = {str(this_step):0}
-            small_object[str(this_step)] = next_json[0]["storage_capacities"]["nutrient_storage"].pop("1")
-            next_json[0]["storage_capacities"]["nutrient_storage"]=small_object;
-            small_object = {str(this_step):0}
-            small_object[str(this_step)] = next_json[0]["storage_capacities"]["power_storage"].pop("1")
-            next_json[0]["storage_capacities"]["power_storage"]=small_object;
-            small_object = {str(this_step):0}
-            small_object[str(this_step)] = next_json[0]["storage_capacities"]["food_storage"].pop("1")
-            next_json[0]["storage_capacities"]["food_storage"]=small_object;
+
             sensor_json.append(next_json[0])
 
     # Eliminate the first entry in the list which was the file that was loaded
@@ -306,7 +291,7 @@ if __name__ == '__main__':
     try:
         print("CENTRAL")
         Path("raw_sensor_data").mkdir(parents=True,exist_ok=True)
-        Path("res").mkdir(parents=True,exist_ok=True)
+        Path("simoc_server","res").mkdir(parents=True,exist_ok=True)
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(server())
         loop.run_forever()
