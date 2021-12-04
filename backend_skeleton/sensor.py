@@ -7,6 +7,7 @@ import socket
 import commonio
 import sensor_methods
 
+
 def sensor_client(scd):
     """Run sensor client to send data from this sensor to central"""
     client_socket = commonio.set_socket()
@@ -19,30 +20,30 @@ def sensor_client(scd):
             current_time = time.time()
             time_elapsed = current_time - start_time
             print("Getting Central's message...")
-            data = client_socket.recv(80).decode('utf-8')
+            data = client_socket.recv(1024).decode('utf-8')
             print(f"Central says: {data}")
             response = "No Data Recorded"
             # Get some sensor message to send
-            try:
-                updated = False
-                while not updated:
+            updated = False
+            while not updated:
+                try:
                     time.sleep(scd.measurement_interval/4)
                     if scd.data_available:  # If fresh data is available, get it
                         error_count = 0
                         response = sensor_methods.get_interval_data(scd,time_elapsed)
                         response = json.dumps(response)
                         updated = True
-            except RuntimeError as e:
-                print(e)
-                error_count += 1
-                if error_count > 10:
-                    print("SENSOR FAILURE... killing program")
-                    sys.exit() # Kill the program because something bad is happening
+                except RuntimeError as e:
+                    print(e)
+                    error_count += 1
+                    updated = False
+                    if error_count > 10:
+                        print("SENSOR FAILURE... killing program")
+                        sys.exit() # Kill the program because something bad is happening
             response = response.encode('utf-8')
             client_socket.sendall(response)
-            data = client_socket.recv(1024).decode('utf-8')
-            print(f"Central says: {data}")
-
+            data = client_socket.recv(1600).decode('utf-8')
+            print(f"Central replies: {data}")
     finally:
       client_socket.close()
 

@@ -7,6 +7,7 @@ import commonio
 
 def front_client():
     client_socket = commonio.set_socket()
+
     print("Backend Reached Succesfuly!")
     try:
         while True:
@@ -20,7 +21,7 @@ def front_client():
             if front_quit:
                 break
             else:
-                data = client_socket.recv(1024).decode('utf-8')
+                data = client_socket.recv(1600).decode('utf-8')
                 print(f"Central says: {data}")
     finally:
       client_socket.close()
