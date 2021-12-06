@@ -1,9 +1,20 @@
-This folder contains 3 scripts that demonstrate the general communication pattern.
-central.py is the stand-in for the main backend server, and sensor.py represents
- sensors that can connect to central.py. front.py is a terminal console front end.
+Central.py serves as a server for multiple sensors running from sensor.py. It
+presently saves data in batches of 24 to consecutive numbered json files in the
+format needed by the front end.
 
-Move a version of central.py with 0.0.0.0 as the ip to the docker container
-as well as functions it needs like interpolation.py and commonio.py
+Inteprolation.py has data interpolation methods for the central.py script to use
+to process data.
+
+commonio.py has a socket setting method and a screen output method. 
+
+sensor_methods.py can be run by itself to test sensor output to the screen. 
+It also contains methods used by sensor.py. Run alone it saves data to csv.
+
+Sensor.py runs the SCD-30 sensor and connects via TCP to central.py
+
+Move a version of central.py with test mode off as well as a copy of 
+interpolation.py and commonio.py. Turning test mode off lets the docker container
+know to look to the internal host network for the sensors.
 
 Make sure commonio on the host machine has the docker container IP address in
 order to function properly.
@@ -13,22 +24,11 @@ To run these scripts locally, use the shell script.
 - sudo chmod 777 startup.sh
 - ./startup.sh
 
-This starts central.py, then front.py which must connect first. Then as many
-sensors as you want can be started. startup.sh starts 1 sensor script for scd-30.
+This starts central.py, then sensor.py 
 You must have the SCD-30 plugged in to start it. 
 
-This folder also contains a "keyboard sensor"
-simulating a second sensor. Keyboard sensor in this version of the script will
-generate errors if properly formed JSON is not sent.
-
 Multiple sensors could all connect to central and central would gather all data
-from all sensors to its list. 
-
-The Central.py script now saves raw sensor data as a CSV, and interpolates
-step data to the nearest 1 second for 24 seconds before generating each csv file.
-
-This is a necessary step towards saving the JSON scripts in intervals of 24.
-This version of the script has a broken JSON saving mechanism.
+from all sensors to its list.
 
 
 
