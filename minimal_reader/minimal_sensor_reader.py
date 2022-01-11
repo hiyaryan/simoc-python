@@ -6,6 +6,7 @@
 import os
 import sys
 os.environ['BLINKA_MCP2221'] = '1'
+os.environ['BLINKA_MCP2221_RESET_DELAY'] = '60'
 import time
 
 # Special packages

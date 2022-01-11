@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  web:
+    build: .
+    privileged: true
+    stdin_open: true
+#      dockerfile: Dockerfile
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+      - "/dev:/dev"
+    network_mode: host
+    volumes:
+      - .:/minimal_reader
+      - /dev:/dev
+      - /run/udev/control:/run/udev/control
