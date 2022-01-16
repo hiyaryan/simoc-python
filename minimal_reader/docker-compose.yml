@@ -4,7 +4,6 @@ services:
     build: .
     privileged: true
     stdin_open: true
-#      dockerfile: Dockerfile
     devices:
       - "/dev/ttyACM0:/dev/ttyACM0"
       - "/dev:/dev"

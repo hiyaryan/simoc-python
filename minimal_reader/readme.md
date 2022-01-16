@@ -9,10 +9,18 @@ docker-compose up --remove-orphans
 If you change the Docker file or the docker compose file, make sure to run
 docker stop CONTAINER_NUMBER
 docker rm CONTAINER_NUMBER
+docker image rm IMAGE_NUMBER --force
 
 This version uses privileged mode and host mode. Instead of using privileged
-mode, there is a way by modifying cgroup. There are also probably a few extra
-unneeded dependecies to be simplified away in the Dockerfile.
+mode, there is a way by modifying cgroup in the docker-compose file.
 
-A reset delay is added that delays the script start due to the use of native
-Linux driver for the MCP2221. 
+If there are issues with the native Linux driver for the MCP2221, the reset delay 
+set to 20 should fix that, but running this containe on an Ubuntu 20 machine with the
+driver overridden seems to work without the reset delay.
+
+The current version of the docker-compose file may be redundant to have the
+/dev/ttyACM0 as wel ass /dev:/dev if the sensor always shows up on ttyACM0
+
+The network_mode: host and the /run/udev/control volume may be necessary
+to recognize if the sensor is disconnected and reconnected but further testing
+may be necessary to verify this.
