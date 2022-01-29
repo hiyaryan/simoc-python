@@ -11,4 +11,4 @@ To install the adafruit python driver:
 `pip3 install adafruit-circuitpython-bme680`
 
 Then the script should run easily.
-`python3 bme680_basic_run.py`
+`python3 bme688_basic_run.py`
