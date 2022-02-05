@@ -8,4 +8,7 @@ class Fake_Sensor(Base_Sensor):
         super().__init__(sensor_name)
 
     def getReading(self):
-        return random.randint(5,10)
+        readingType1 = (random.randint(5,10), "unitsA")
+        readingType2 = (random.randint(5,10), "unitsB")
+        readingType3 = (random.randint(5,10), "unitsC")
+        return {"readingType1":readingType1,"readingType2":readingType2,"readingType3":readingType3}
