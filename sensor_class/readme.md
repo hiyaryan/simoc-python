@@ -3,7 +3,9 @@ This directory is to build a sensor class for other sensors to inherit from, and
 BaseSensor.py contains an abstract class called Base_Sensor
 FakeSensor.py contains a class called Fake_Sensor that inherits from Base_Sensor
 bme688sensor.py contains a class called bme688 that inherits from Base_Sensor (and works on Raspberry Pi!)
-sgp30sensor.py contains a class called sgp30 that inherits from Base_SEnsor (and works on Raspberry Pi!)
+sgp30sensor.py contains a class called sgp30 that inherits from Base_Sensor (and works on Raspberry Pi!)
+scd30sensor.py contains a class called scd30 that inherits from Base_Sensor (and works on Raspberry Pi!)
 
-TestScript instantiates the bme688, sgp30, and some fake sensors to test the functionality.
+TestScript instantiates the bme688, sgp30, scd30 and some fake sensors to test the functionality.
+This script feeds the pressure value from the BME688 into the SCD30
 

@@ -25,5 +25,6 @@ class bme688(Base_Sensor):
         return {"temperature":temperature, "humidity":humidity,
                 "pressure":pressure,"altitude":altitude,"resistance":gas}
 
-
+    def getBaseline(self):
+        return "Default Settings"
 

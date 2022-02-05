@@ -23,3 +23,8 @@ class Base_Sensor(ABC):
     def getReading(self):
         "An abstract method to return all the sensor data as a dictionary"
         return NotImplemented
+
+    @abstractmethod
+    def getBaseline(self):
+        "An abstract method to return all the sensor parameters"
+        return NotImplemented

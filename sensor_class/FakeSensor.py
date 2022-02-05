@@ -12,3 +12,6 @@ class Fake_Sensor(Base_Sensor):
         readingType2 = (random.randint(5,10), "unitsB")
         readingType3 = (random.randint(5,10), "unitsC")
         return {"readingType1":readingType1,"readingType2":readingType2,"readingType3":readingType3}
+
+    def getBaseline(self):
+        return "Default settings"
