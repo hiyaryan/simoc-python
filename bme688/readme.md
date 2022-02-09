@@ -12,3 +12,10 @@ To install the adafruit python driver:
 
 Then the script should run easily.
 `python3 bme688_basic_run.py`
+
+
+Hardware usesage note:
+# Due to the nature of the Metal Oxide sensor, the sensor should be run for 48 hours from new to
+# burn-in the device.  It should also be run for 30 minutes straight before trusting readings.
+
+It is recommended to calibrate the BME688 against known sources.
