@@ -6,6 +6,8 @@
 import os
 import sys
 os.environ['BLINKA_MCP2221'] = '1'
+os.environ['BLINKA_MCP2221_RESET_DELAY'] = '-1'  # avoid resetting the sensor
+
 import time
 
 # Special packages
